@@ -22,5 +22,14 @@
 		&:nth-child(n + 1261) {
 			border-bottom: var(--border);
 		}
+		
+		&.selected {
+			background-color: #30A0F088;
+			cursor: pointer;
+		}
+		&.moveTarget {
+			background-color: #c330f088;
+			cursor: pointer;
+		}
 	}
 }

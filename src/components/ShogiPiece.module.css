@@ -54,7 +54,3 @@
 		font-size: 26cqw;
 	}
 }
-[data-current-player="sente"] .piece.sente, [data-current-player="gote"] .piece.gote {
-	/* border: 1px solid blue; */
-	cursor: pointer;
-}

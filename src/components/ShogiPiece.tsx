@@ -9,10 +9,11 @@ import { kanjiStringLength } from "../lib/kanjiIds";
 
 export default function ShogiPiece({
 	piece,
+	className = "",
 	...props
 }: {
-	piece: Piece
-} & Omit<HTMLAttributes<HTMLDivElement>, "class" | "className">) {
+	piece: Piece,
+} & HTMLAttributes<HTMLSpanElement>) {
 	const kanji = getPieceKanji(piece);
 	const kanjiLength = kanjiStringLength(kanji);
 	return (
@@ -25,6 +26,7 @@ export default function ShogiPiece({
 				kanjiLength == 3 && styles.tripleKanji,
 				kanjiLength > 3 && function(){console.log('FAILFAILFAIL',kanji);return styles.singleKanji}(),
 				piece.owner == Player.Sente? styles.sente : styles.gote,
+				className
 			)}
 			{...props}
 		>
@@ -41,7 +43,7 @@ function getPieceKanji(piece: Piece) {
 	} else if(piece.species == "GLG" && piece.promotedFrom == "P") {
 		return "と金";
 	} else {
-		return pieceKanjis.get(piece.species)
+		return pieceKanjis.get(piece.species)!
 			.replaceAll("𠵇", "⿰口奇") // these pieces aren't in the fonts used so they have to be "constructed" from constituent characters
 			.replaceAll("䳇", "⿰母鳥")
 			.replaceAll("䳲", "⿱振鳥")

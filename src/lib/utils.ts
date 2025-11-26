@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useCallback, useState } from "preact/hooks";
 import { Tuple } from "../types/meta";
 
 export function loop(n: number): number[] {
@@ -20,4 +20,9 @@ export function assertFail(message: string) {
 }
 export function joinClasses(...classes: any[]): string {
 	return classes.filter(c => typeof c == "string").join(" ");
+}
+export function useCounter(initial: number = 0): [number, () => void] {
+	const [count, setCount] = useState(initial);
+	const increment = useCallback(() => setCount(count + 1), []);
+	return [count, increment];
 }
