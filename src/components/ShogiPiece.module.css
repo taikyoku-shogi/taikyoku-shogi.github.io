@@ -1,0 +1,59 @@
+.piece {
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	
+	writing-mode: vertical-lr;
+	user-select: none;
+	
+	background-size: auto 93.13%;
+	background-position: center;
+	background-repeat: no-repeat;
+	
+	span {
+		/* a small offset is needed due to the border*/
+		padding-top: 1px;
+		padding-right: 1px;
+		
+		/* Firefox needs it a bit differently */
+		@-moz-document url-prefix() {
+			padding-right: 0;
+		}
+	}
+	&.sente {
+		background-image: url("../assets/pieceBackgroundSente.svg");
+	}
+	&.gote {
+		background-image: url("../assets/pieceBackgroundGote.svg");
+		span {
+			transform: rotate(180deg);
+		}
+	}
+	
+	&:not(.promoted) {
+		color: black;
+		font-family: ackaisyo;
+		/* font-weight: bold; */
+	}
+	&.promoted {
+		/* color: #C30; */
+		color: #B40100;
+		font-family: acgyosyo;
+	}
+	&.singleKanji {
+		font-size: 54cqw;
+	}
+	&.doubleKanji {
+		font-size: 38cqw;
+	}
+	&.tripleKanji {
+		font-size: 26cqw;
+	}
+}
+[data-current-player="sente"] .piece.sente, [data-current-player="gote"] .piece.gote {
+	/* border: 1px solid blue; */
+	cursor: pointer;
+}

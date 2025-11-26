@@ -1,0 +1,26 @@
+.board {
+	width: min(100vw, calc(100vh - var(--header-height)));
+	aspect-ratio: 1 / 1;
+	display: grid;
+	grid-template: repeat(36, 1fr) / repeat(36, 1fr);
+	border-collapse: collapse;
+	background-image: url("../assets/board.jpg");
+	background-size: 40% 40%;
+	
+	> div {
+		--border: 1px solid black;
+		
+		container-type: size;
+		box-sizing: border-box;
+		border-top: var(--border);
+		border-left: var(--border);
+		overflow: hidden;
+		
+		&:nth-child(36n) {
+			border-right: var(--border);
+		}
+		&:nth-child(n + 1261) {
+			border-bottom: var(--border);
+		}
+	}
+}
