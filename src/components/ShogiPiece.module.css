@@ -13,7 +13,7 @@
 	background-position: center;
 	background-repeat: no-repeat;
 	
-	span {
+	> span {
 		/* a small offset is needed due to the border*/
 		padding-top: 1px;
 		padding-right: 1px;
@@ -21,6 +21,7 @@
 		/* Firefox needs it a bit differently */
 		@-moz-document url-prefix() {
 			padding-right: 0;
+			line-height: normal;
 		}
 	}
 	&.sente {
@@ -28,7 +29,7 @@
 	}
 	&.gote {
 		background-image: url("../assets/pieceBackgroundGote.svg");
-		span {
+		> span {
 			transform: rotate(180deg);
 		}
 	}

@@ -1,0 +1,39 @@
+.verticalStack, .horizontalStack {
+	writing-mode: horizontal-tb;
+	display: inline-flex;
+	align-items: center;
+	line-height: normal;
+}
+.verticalStack {
+	margin-top: 0.2em;
+	flex-direction: column;
+	line-height: 0.5;
+	vertical-align: text-top;
+	
+	@-moz-document url-prefix() {
+		vertical-align: top;
+		margin-right: 0.1em;
+	}
+	
+	* {
+		display: inline-block;
+		transform: scaleY(0.5);
+		transform-origin: top;
+	}
+}
+.horizontalStack {
+	letter-spacing: -0.5em;
+	padding-right: 0.1em;
+	
+	@-moz-document url-prefix() {
+		margin-bottom: -0.1em;
+		padding-right: 0.2em;
+	}
+	
+	* {
+		margin-left: -0.05em;
+		display: inline-block;
+		transform: scaleX(0.5);
+		transform-origin: top;
+	}
+}
