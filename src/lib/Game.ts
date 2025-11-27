@@ -23,6 +23,7 @@ export default class Game {
 			this.#squares = create36x36<Piece | null>(null);
 			this.#moveCounter = 0;
 		};
+		// this.shuffle(200);
 	}
 	getSquare(pos: Vec2): Piece | null {
 		return this.#squares[pos[0]]?.[pos[1]] ?? null;
@@ -80,5 +81,16 @@ export default class Game {
 			}
 		}
 		return count;
+	}
+	shuffle(shuffles: number) {
+		for(let i = 0; i < shuffles; i++) {
+			const x1 = ~~(Math.random() * 36);
+			const y1 = ~~(Math.random() * 36);
+			const x2 = ~~(Math.random() * 36);
+			const y2 = ~~(Math.random() * 36);
+			const t = this.getSquare([x1, y1]);
+			this.setSquare([x1, y1], this.getSquare([x2, y2]));
+			this.setSquare([x2, y2], t);
+		}
 	}
 }

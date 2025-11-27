@@ -1,4 +1,3 @@
-import { useCallback, useState } from "preact/hooks";
 import { Tuple } from "../types/meta";
 
 export function range(n: number, b?: number): number[] {
@@ -32,4 +31,13 @@ export function countItems<T>(arr: T[]): Map<T, number> {
 		acc.set(item, (acc.get(item) ?? 0) + 1);
 		return acc;
 	}, new Map<T, number>());
+}
+export function cacheUnaryFunc<T extends string | number | boolean, R>(f: (x: T) => R): (x: T) => Readonly<R> {
+	const cache = new Map<T, R>();
+	return x => {
+		if(!cache.has(x)) {
+			cache.set(x, f(x));
+		}
+		return cache.get(x)!;
+	};
 }

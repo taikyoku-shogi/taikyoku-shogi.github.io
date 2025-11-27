@@ -1,6 +1,6 @@
 import { PieceMovements, Vec2 } from "../types/TaikyokuShogi";
 import { abs } from "./math";
-import { isNumber } from "./utils";
+import { cacheUnaryFunc, isNumber } from "./utils";
 import * as vec2 from "./vec2";
 
 const stepAtoms = {
@@ -22,18 +22,18 @@ const abbreviations = {
 };
 
 export const directions = {
-	F: [0, 1] as Vec2,
-	FR: [1, 1] as Vec2,
-	R: [1, 0] as Vec2,
-	BR: [1, -1] as Vec2,
-	B: [0, -1] as Vec2,
-	BL: [-1, -1] as Vec2,
-	L: [-1, 0] as Vec2,
-	FL: [-1, 1] as Vec2
-};
+	F: [0, 1],
+	FR: [1, 1],
+	R: [1, 0],
+	BR: [1, -1],
+	B: [0, -1],
+	BL: [-1, -1],
+	L: [-1, 0],
+	FL: [-1, 1]
+} as const;
 export type MovementDir = keyof typeof directions;
 
-export function parseBetzaNotation(betza: string): PieceMovements {
+export const parseBetzaNotation = cacheUnaryFunc((betza: string): PieceMovements => {
 	// keep original string for error logging
 	const ogBetza = betza;
 	Object.entries(abbreviations).forEach(([abbreviation, atoms]) => {
@@ -152,7 +152,7 @@ export function parseBetzaNotation(betza: string): PieceMovements {
 		slides: slideMoves,
 		jumps: jumpMoves
 	};
-}
+});
 function isValidAtomChar(char: string): char is keyof typeof stepAtoms {
 	// why oh why doesn't typescript do this automatically...
 	return char in stepAtoms;
