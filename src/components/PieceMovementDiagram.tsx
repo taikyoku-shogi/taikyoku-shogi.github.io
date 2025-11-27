@@ -1,10 +1,10 @@
-import { directions, parseBetzaNotation } from "../lib/betzaNotationParser";
+import { MovementDir, directions, parseBetzaNotation } from "../lib/betzaNotationParser";
 import { abs, max } from "../lib/math";
 import Piece from "../lib/Piece";
 import { piecesInitiallyOnBoard } from "../lib/pieceData";
-import { loop } from "../lib/utils";
+import { range } from "../lib/utils";
 import { PieceEntry } from "../types/pieces.csv";
-import { Player } from "../types/TaikyokuShogi";
+import { PieceMovements, Player } from "../types/TaikyokuShogi";
 
 import ShogiPiece from "./ShogiPiece";
 import styles from "./PieceMovementDiagram.module.css";
@@ -17,6 +17,10 @@ enum MovementType {
 	Jump
 }
 
+const horizontalDirs: Set<MovementDir> = new Set(["FR", "R", "BR", "BL", "L", "FL"]);
+const forwardsDirs: Set<MovementDir> = new Set(["FL", "F", "FR"]);
+const backWardsDirs: Set<MovementDir> = new Set(["BL", "B", "BR"]);
+
 export default function PieceMovementDiagram({
 	pieceEntry
 }: {
@@ -26,14 +30,22 @@ export default function PieceMovementDiagram({
 	
 	const movements = parseBetzaNotation(pieceEntry.movement);
 	
-	const maxSlide = max(...Object.values(movements.slides).filter(x => x != Infinity));
-	const maxJump = max(...movements.jumps.flatMap(([x, y]) => [abs(x), abs(y)]));
-	const gridSize = max(1, maxSlide, maxJump) + 1;
+	const maxHorizontalSlide = maxSlideInDir(movements, horizontalDirs);
+	const maxHorizontalJump = max(0, ...movements.jumps.map(([x]) => abs(x)));
+	const horizontalGridSize = max(1, maxHorizontalSlide, maxHorizontalJump) + 1;
+	
+	const maxForwardsSlide = maxSlideInDir(movements, forwardsDirs);
+	const maxForwardsJump = max(...movements.jumps.filter(([, y]) => y > 0).map(([, y]) => y));
+	const gridUpperY = max(1, maxForwardsSlide, maxForwardsJump) + 1;
+	
+	const maxBackwardsSlide = maxSlideInDir(movements, backWardsDirs);
+	const maxBackwardsJump = max(...movements.jumps.filter(([, y]) => y < 0).map(([, y]) => -y));
+	const gridLowerY = -max(1, maxBackwardsSlide, maxBackwardsJump) - 1;
 	
 	const grid: Record<number, Record<number, MovementType | null>> = {};
-	for(let y = -gridSize; y <= gridSize; y++) {
+	for(let y = gridLowerY; y <= gridUpperY; y++) {
 		grid[y] = {};
-		for(let x = -gridSize; x <= gridSize; x++) {
+		for(let x = -horizontalGridSize; x <= horizontalGridSize; x++) {
 			grid[y][x] = null;
 		}
 	}
@@ -41,7 +53,7 @@ export default function PieceMovementDiagram({
 		const step = directions[dir];
 		let [x, y] = step;
 		for(let i = 1; i <= range; i++) {
-			if(grid[x]?.[y] === undefined) {
+			if(grid[y]?.[x] === undefined) {
 				break;
 			}
 			grid[y][x] = range == Infinity? MovementType.Range : MovementType.Step;
@@ -56,11 +68,11 @@ export default function PieceMovementDiagram({
 	return (
 		<table class={styles.table}>
 			<tbody>
-				{loop(gridSize * 2 + 1).flatMap(col => (
+				{range(-gridUpperY, -gridLowerY + 1).flatMap(row => (
 					<tr>
-						{loop(gridSize * 2 + 1).map(row => {
-							const y = gridSize - col;
-							const x = row - gridSize;
+						{range(-horizontalGridSize, horizontalGridSize + 1).map(x => {
+							// very wacky ranges because the highest y rows should be rendered first, not last
+							const y = -row;
 							const move = grid[y][x];
 							if(!y && !x) {
 								return (
@@ -83,4 +95,8 @@ export default function PieceMovementDiagram({
 			</tbody>
 		</table>
 	);
+}
+
+function maxSlideInDir(movements: PieceMovements, dirs: Set<MovementDir>): number {
+	return max(0, ...Object.entries(movements.slides).filter(([dir, range]) => dirs.has(dir) && range != Infinity).map(([, range]) => range));
 }

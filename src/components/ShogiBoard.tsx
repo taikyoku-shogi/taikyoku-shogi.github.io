@@ -1,6 +1,6 @@
 import { useCallback, useState } from "preact/hooks";
 import Game from "../lib/Game";
-import { joinClasses, loop } from "../lib/utils";
+import { joinClasses, range } from "../lib/utils";
 import { Move, Player, Vec2 } from "../types/TaikyokuShogi"
 import styles from "./ShogiBoard.module.css";
 import * as vec2 from "../lib/vec2";
@@ -48,8 +48,8 @@ export default function ShogiBoard({
 			className={styles.board}
 			data-current-player={currentPlayer == Player.Sente? "sente" : "gote"}
 		>
-			{loop(36).flatMap(y => (
-				loop(36).map(x => {
+			{range(36).flatMap(y => (
+				range(36).map(x => {
 					const boardPos: [number, number] = calculateBoardPos([x, y]);
 					const piece = game.getSquare(boardPos);
 					

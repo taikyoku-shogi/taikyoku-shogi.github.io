@@ -31,6 +31,7 @@ export const directions = {
 	L: [-1, 0] as Vec2,
 	FL: [-1, 1] as Vec2
 };
+export type MovementDir = keyof typeof directions;
 
 export function parseBetzaNotation(betza: string): PieceMovements {
 	// keep original string for error logging

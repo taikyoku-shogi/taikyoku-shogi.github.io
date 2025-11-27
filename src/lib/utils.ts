@@ -1,8 +1,11 @@
 import { useCallback, useState } from "preact/hooks";
 import { Tuple } from "../types/meta";
 
-export function loop(n: number): number[] {
-	return Array.from({ length: n }, (_, i) => i);
+export function range(n: number, b?: number): number[] {
+	if(b === undefined)	{
+		return Array.from({ length: n }, (_, i) => i);
+	}
+	return Array.from({ length: b - n }, (_, i) => i + n);
 }
 export function create2dArray<W extends number, H extends number, T>(w: W, h: H, value?: T): Tuple<Tuple<T, H>, W> {
 	return Array.from({ length: w }, () => Array.from( { length: h }, () => value)) as Tuple<Tuple<T, H>, W>;

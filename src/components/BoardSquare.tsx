@@ -23,7 +23,7 @@ export default memo(function BoardSquare({
 	return (
 		<div
 			className={className}
-			onMouseDown={handleClick}
+			onMouseDown={handleClick} // touch moves hehehe
 		>
 			{piece && <ShogiPiece
 				piece={piece}
