@@ -67,6 +67,14 @@ export default class Game {
 		});
 		this.#moveCounter++;
 	}
+	pieceCanMove(piecePos: Vec2): boolean {
+		const piece = this.getSquare(piecePos);
+		return piece?.canMove(piecePos, this) ?? false;
+	}
+	getMovesAtSquare(piecePos: Vec2): Move[] {
+		const piece = this.getSquare(piecePos)!;
+		return piece.getMoves(piecePos, this);
+	}
 	getCurrentPlayer(): Player {
 		return this.moveCounter % 2 == 0? Player.Sente : Player.Gote;
 	}

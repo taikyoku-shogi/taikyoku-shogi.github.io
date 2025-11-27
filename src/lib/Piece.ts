@@ -1,4 +1,4 @@
-import { Move, PieceSpecies, Player, Vec2 } from "../types/TaikyokuShogi";
+import { Move, PieceMovements, PieceSpecies, Player, Vec2 } from "../types/TaikyokuShogi";
 import { directions, parseBetzaNotation } from "./betzaNotationParser";
 import Game from "./Game";
 import { pieceMovementBetzaNotations, piecePromotions, rangeCapturingPieces } from "./pieceData";
@@ -16,11 +16,16 @@ export default class Piece {
 	readonly owner: Player;
 	readonly promotedFrom: PieceSpecies | null;
 	
+	readonly #movements: PieceMovements;
+	
 	constructor(species: PieceSpecies, promoted: boolean, owner: Player, promotedFrom: PieceSpecies | null = null) {
 		this.species = species;
 		this.promoted = promoted;
 		this.owner = owner;
 		this.promotedFrom = promotedFrom;
+		
+		const betzaNotation = pieceMovementBetzaNotations.get(this.species)!;
+		this.#movements = parseBetzaNotation(betzaNotation);
 	}
 	canPromote(): boolean {
 		return !this.promoted && piecePromotions.has(this.species);
@@ -43,12 +48,10 @@ export default class Piece {
 		if(game.getCurrentPlayer() != this.owner) {
 			return [];
 		}
-		const betzaNotation = pieceMovementBetzaNotations.get(this.species)!;
-		const movements = parseBetzaNotation(betzaNotation);
 		
 		const targetLocations = new vec2.Set();
 		
-		Object.entries(movements.slides).forEach(([dir, range]) => {
+		Object.entries(this.#movements.slides).forEach(([dir, range]) => {
 			const rawStep = directions[dir];
 			const step: Vec2 = this.owner == Player.Sente? [rawStep[0], -rawStep[1]] : [-rawStep[0], rawStep[1]];
 			let target = vec2.add(pos, step);
@@ -64,7 +67,7 @@ export default class Piece {
 				target = vec2.add(target, step);
 			}
 		});
-		movements.jumps.forEach(jump => {
+		this.#movements.jumps.forEach(jump => {
 			if(this.#getSquareStatus(game, jump) != SquareStatus.Blocked) {
 				targetLocations.add(jump);
 			}
