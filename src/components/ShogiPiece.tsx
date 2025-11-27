@@ -31,7 +31,7 @@ export default function ShogiPiece({
 			{...props}
 		>
 			<span>
-				<Kanji>{kanji}</Kanji>
+				<Kanji vertical>{kanji}</Kanji>
 			</span>
 		</span>
 	)
