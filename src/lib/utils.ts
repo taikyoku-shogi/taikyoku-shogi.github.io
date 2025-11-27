@@ -24,11 +24,6 @@ export function assertFail(message: string) {
 export function joinClasses(...classes: any[]): string {
 	return classes.filter(c => typeof c == "string").join(" ");
 }
-export function useCounter(initial: number = 0): [number, () => void] {
-	const [count, setCount] = useState(initial);
-	const increment = useCallback(() => setCount(count + 1), []);
-	return [count, increment];
-}
 export function isNumber(x: any): x is number {
 	return parseInt(x) === +x;
 }

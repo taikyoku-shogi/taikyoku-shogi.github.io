@@ -10,6 +10,8 @@ import ShogiPiece from "./ShogiPiece";
 import styles from "./PieceMovementDiagram.module.css";
 import { JumpMoveTd, RangeMoveTd } from "./pieceMovementSymbols";
 import { StepMoveTd } from "./pieceMovementSymbols";
+import { useMemo } from "preact/hooks";
+import { useInView } from "../lib/hooks";
 
 enum MovementType {
 	Step,
@@ -28,7 +30,7 @@ export default function PieceMovementDiagram({
 }) {
 	const piece = new Piece(pieceEntry.code, !piecesInitiallyOnBoard.has(pieceEntry.code), Player.Sente);
 	
-	const movements = parseBetzaNotation(pieceEntry.movement);
+	const movements = useMemo(() => parseBetzaNotation(pieceEntry.movement), []);
 	
 	const maxHorizontalSlide = maxSlideInDir(movements, horizontalDirs);
 	const maxHorizontalJump = max(0, ...movements.jumps.map(([x]) => abs(x)));
@@ -65,34 +67,47 @@ export default function PieceMovementDiagram({
 		grid[y][x] = MovementType.Jump; // jumps take precedence on the grid
 	});
 	
+	const [tableRef, tableVisible] = useInView<HTMLTableElement>();
+	
 	return (
-		<table class={styles.table}>
-			<tbody>
-				{range(-gridUpperY, -gridLowerY + 1).flatMap(row => (
-					<tr>
-						{range(-horizontalGridSize, horizontalGridSize + 1).map(x => {
-							// very wacky ranges because the highest y rows should be rendered first, not last
-							const y = -row;
-							const move = grid[y][x];
-							if(!y && !x) {
-								return (
-									<td className={styles.piece}>
-										<ShogiPiece piece={piece}/>
-									</td>
-								);
-							} else if(move === MovementType.Step) {
-								return <StepMoveTd/>;
-							} else if(move === MovementType.Range) {
-								return <RangeMoveTd x={x} y={y}/>;
-							} else if(move === MovementType.Jump) {
-								return <JumpMoveTd/>;
-							} else {
-								return <td></td>;
-							}
-						})}
-					</tr>
-				))}
-			</tbody>
+		<table
+			ref={tableRef}
+			class={styles.table}
+			style={{
+				// by putting the width/height here, it avoids the layout changing when tables pop in and out of visibility.
+				// 31px per cell + 1px for the border on the other edge
+				width: `${31 * (2 * horizontalGridSize + 1) + 1}px`,
+				height: `${31 * (gridUpperY - gridLowerY + 1) + 1}px`
+			}}
+		>
+			{tableVisible && (
+				<tbody>
+					{range(-gridUpperY, -gridLowerY + 1).flatMap(row => (
+						<tr>
+							{range(-horizontalGridSize, horizontalGridSize + 1).map(x => {
+								// very wacky ranges because the highest y rows should be rendered first, not last
+								const y = -row;
+								const move = grid[y][x];
+								if(!y && !x) {
+									return (
+										<td className={styles.piece}>
+											<ShogiPiece piece={piece}/>
+										</td>
+									);
+								} else if(move === MovementType.Step) {
+									return <StepMoveTd/>;
+								} else if(move === MovementType.Range) {
+									return <RangeMoveTd x={x} y={y}/>;
+								} else if(move === MovementType.Jump) {
+									return <JumpMoveTd/>;
+								} else {
+									return <td></td>;
+								}
+							})}
+						</tr>
+					))}
+				</tbody>
+			)}
 		</table>
 	);
 }
