@@ -26,3 +26,12 @@ export function useCounter(initial: number = 0): [number, () => void] {
 	const increment = useCallback(() => setCount(count + 1), []);
 	return [count, increment];
 }
+export function isNumber(x: any): x is number {
+	return parseInt(x) === +x;
+}
+export function countItems<T>(arr: T[]): Map<T, number> {
+	return arr.reduce((acc, item) => {
+		acc.set(item, (acc.get(item) ?? 0) + 1);
+		return acc;
+	}, new Map<T, number>());
+}

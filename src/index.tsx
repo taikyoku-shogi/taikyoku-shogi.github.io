@@ -1,5 +1,10 @@
 import { LocationProvider, Router, Route, hydrate, prerender as ssr, ErrorBoundary } from "preact-iso";
 
+import "@fontsource/catamaran/400.css";
+import "@fontsource/catamaran/700.css";
+import "@fontsource/noto-sans-jp/400.css";
+import "@fontsource/noto-sans-jp/700.css";
+
 import Header from "./components/Header";
 import HomePage from "./pages/Home";
 import AboutPage from "./pages/About";
@@ -28,7 +33,7 @@ export function App() {
 }
 
 if(typeof window !== "undefined") {
-	hydrate(<App/>, document.getElementById("app"));
+	hydrate(<App/>, document.getElementById("app")!);
 }
 
 export async function prerender(data) {

@@ -1,18 +1,13 @@
-@font-face {
-	font-family: acgyosyo;
-	src: url("assets/acgyosyo.ttf");
-}
-@font-face {
-	font-family: ackaisyo;
-	src: url("assets/ackaisyo.ttf");
-}
+@import "./fonts.css";
 
 :root {
-	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+	font-family: Catamaran, "Trebuchet MS", "Noto Sans JP", Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 	line-height: 1.5;
 	
 	color: #222;
 	background-color: white;
+	
+	scroll-behavior: smooth;
 	
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
@@ -24,6 +19,23 @@
 
 body {
 	margin: 0;
+}
+table {
+	&, tr, td, th {
+		border: 1px solid #A2A9B1;
+		border-collapse: collapse;
+		padding: 2px 5px;
+		margin: 0;
+	}
+	th {
+		background: #DADBDB;
+	}
+	td {
+		background: #F8F9FA;
+	}
+}
+main > section {
+	margin: 2em;
 }
 
 #app {

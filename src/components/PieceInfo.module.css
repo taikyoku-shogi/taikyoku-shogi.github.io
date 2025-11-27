@@ -1,0 +1,19 @@
+.pieceInfo {
+	margin: 0.8em;
+	padding: 1.25em;
+	display: inline-block;
+	outline: 3px solid #E6E99F;
+	vertical-align: top;
+	text-align: left;
+	
+	background: #ecedc8;
+	border-radius: 1em;
+	
+	&:target {
+		outline: 5px solid gold;
+	}
+	
+	> * {
+		margin: 0;
+	}
+}

@@ -6,6 +6,8 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
+		"@fontsource/catamaran": "^5.2.8",
+		"@fontsource/noto-sans-jp": "^5.2.8",
 		"preact": "^10.26.9",
 		"preact-iso": "^2.11.0",
 		"preact-render-to-string": "^6.6.3"

@@ -19,3 +19,7 @@ export interface Move {
 	end: Vec2;
 	intermediateSteps?: Vec2[];
 }
+export interface PieceMovements {
+	slides: Partial<Record<"F" | "FR" | "R" | "BR" | "B" | "BL" | "L" | "FL", number>>;
+	jumps: Vec2[];
+}

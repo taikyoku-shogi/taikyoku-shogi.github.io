@@ -3,6 +3,7 @@ declare global {
 	interface ObjectConstructor {
 		fromEntries<K extends PropertyKey, T = any>(entries: Iterable<readonly [K, T]>): { [Key in K]: T; };
 		entries<K extends string, T>(o: Record<K, T>): [K, T][];
+		entries<K extends string, T>(o: Partial<Record<K, T>>): [K, T][];
 	}
 	interface Array<T> {
 		map<U extends any[], This extends readonly unknown[]>(this: This, callbackfn: (value: T, index: number, array: This) => [...U]): { [K in keyof This]: K extends number | `${number}`? U : never };
