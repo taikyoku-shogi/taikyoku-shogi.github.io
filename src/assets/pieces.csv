@@ -70,8 +70,8 @@ VM,Vertical mover,竪行,WvR,FLO
 DE,Drunken elephant,酔象,fsK,CP
 NK,Neighboring king,近王,fsK,FST
 FST,Front standard,前旗,B3R,GST
-GCH,Gold chariot,金車,FsR2vR,PC
-PC,Playful cockatoo,遊䳇,bB2fB3sR5vR,-
+GCH,Gold chariot,金車,FsR2vR,PP
+PP,Playful parrot,遊䳇,bB2fB3sR5vR,-
 SD,Side dragon,横龍,fsR,RUD
 RUD,Running dragon,走龍,fsQbR5,-
 RUS,Running stag,走鹿,bR2sRfB,FSG
@@ -236,8 +236,8 @@ OC,Ox chariot,牛車,fR,PO
 PO,Plodding ox,歬牛,FvR,-
 SF,Side flyer,横飛,FsR,SD
 BBE,Blind bear,盲熊,sK,FLS
-OR,Old rat,老鼠,fWbF,BP
-BP,Bird of paradise,⿰古寺⿱時鳥,vRfB,-
+OR,Old rat,老鼠,fWbF,MB
+MB,Mocking bird,⿰古寺⿱時鳥,vRfB,-
 STC,Strong chariot,強車,RfB,-
 CS,Coiled serpent,蟠蛇,vWbF,CD
 CD,Coiled dragon,蟠龍,vRbB,-
