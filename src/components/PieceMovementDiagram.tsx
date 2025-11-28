@@ -69,6 +69,35 @@ export default function PieceMovementDiagram({
 	
 	const [tableRef, tableVisible] = useInView<HTMLTableElement>();
 	
+	const tbody = useMemo(() => (
+		<tbody>
+			{range(-gridUpperY, -gridLowerY + 1).flatMap(row => (
+				<tr>
+					{range(-horizontalGridSize, horizontalGridSize + 1).map(x => {
+						// very wacky ranges because the highest y rows should be rendered first, not last
+						const y = -row;
+						const move = grid[y][x];
+						if(!y && !x) {
+							return (
+								<td className={styles.piece}>
+									<ShogiPiece piece={piece}/>
+								</td>
+							);
+						} else if(move === MovementType.Step) {
+							return <StepMoveTd/>;
+						} else if(move === MovementType.Range) {
+							return <RangeMoveTd x={x} y={y}/>;
+						} else if(move === MovementType.Jump) {
+							return <JumpMoveTd/>;
+						} else {
+							return <td></td>;
+						}
+					})}
+				</tr>
+			))}
+		</tbody>
+	), [grid, gridLowerY, gridUpperY, horizontalGridSize, piece]);
+	
 	return (
 		<table
 			ref={tableRef}
@@ -80,34 +109,7 @@ export default function PieceMovementDiagram({
 				height: `${31 * (gridUpperY - gridLowerY + 1) + 1}px`
 			}}
 		>
-			{tableVisible && (
-				<tbody>
-					{range(-gridUpperY, -gridLowerY + 1).flatMap(row => (
-						<tr>
-							{range(-horizontalGridSize, horizontalGridSize + 1).map(x => {
-								// very wacky ranges because the highest y rows should be rendered first, not last
-								const y = -row;
-								const move = grid[y][x];
-								if(!y && !x) {
-									return (
-										<td className={styles.piece}>
-											<ShogiPiece piece={piece}/>
-										</td>
-									);
-								} else if(move === MovementType.Step) {
-									return <StepMoveTd/>;
-								} else if(move === MovementType.Range) {
-									return <RangeMoveTd x={x} y={y}/>;
-								} else if(move === MovementType.Jump) {
-									return <JumpMoveTd/>;
-								} else {
-									return <td></td>;
-								}
-							})}
-						</tr>
-					))}
-				</tbody>
-			)}
+			{tableVisible && tbody}
 		</table>
 	);
 }
