@@ -40,50 +40,51 @@ export default class Piece {
 		const promotedSpecies = piecePromotions.get(this.species)!;
 		return new Piece(promotedSpecies, true, this.owner, this.species);
 	}
-	canMove(pos: Vec2, game: Game): boolean {
-		return game.getCurrentPlayer() == this.owner;
-		// return this.getMoves(pos, game).length > 0;
-	}
-	getMoves(pos: Vec2, game: Game): Move[] {
-		if(game.getCurrentPlayer() != this.owner) {
-			return [];
-		}
-		
+	#getAttackingSquares(pos: Vec2, game: Game): Vec2[] {
 		const targetLocations = new vec2.Set();
 		
 		Object.entries(this.#movements.slides).forEach(([dir, range]) => {
 			const rawStep = directions[dir];
-			const step: Vec2 = this.owner == Player.Sente? [rawStep[0], -rawStep[1]] : [-rawStep[0], rawStep[1]];
+			const step = this.#movementPosToBoardPos(rawStep);
 			let target = vec2.add(pos, step);
 			for(let i = 0; i < range; i++) {
-				const status = this.#getSquareStatus(game, target);
-				if(status == SquareStatus.Blocked) {
+				if(!vec2.isWithinBounds(target, [0, 0], [36, 36])) {
 					break;
 				}
+				const status = this.#getSquareStatus(game, target);
 				targetLocations.add(target);
-				if(status == SquareStatus.CanCapture) {
+				if(status != SquareStatus.Empty) {
 					break;
 				}
 				target = vec2.add(target, step);
 			}
 		});
-		this.#movements.jumps.forEach(jump => {
-			if(this.#getSquareStatus(game, jump) != SquareStatus.Blocked) {
-				targetLocations.add(jump);
-			}
+		this.#movements.jumps.forEach(rawJump => {
+			const jump = this.#movementPosToBoardPos(rawJump);
+			const target = vec2.add(pos, jump);
+			targetLocations.add(target);
 		});
 		
-		return targetLocations.values.map(end => ({
+		return targetLocations.values;
+	}
+	getMovesAndAttackingSquares(pos: Vec2, game: Game): [Move[], Vec2[]] {
+		const attackingSquares = this.#getAttackingSquares(pos, game);
+		const validTargets = attackingSquares.filter(square => this.#getSquareStatus(game, square) != SquareStatus.Blocked);
+		const moves = validTargets.map(end => ({
 			start: pos,
 			end
 		}));
+		return [moves, attackingSquares];
 	}
 	isRangeCapturing(): boolean {
 		return rangeCapturingPieces.has(this.species);
 	}
 	
+	#movementPosToBoardPos(movement: Vec2): Vec2 {
+		return this.owner == Player.Sente? [movement[0], -movement[1]] : [-movement[0], movement[1]];;
+	}
 	#getSquareStatus(game: Game, square: Vec2): SquareStatus {
-		if(square[0] < 0 || square[0] > 35 || square[1] < 0 || square[1] > 35) {
+		if(!vec2.isWithinBounds(square, [0, 0], [36, 36])) {
 			return SquareStatus.Blocked;
 		}
 		const pieceAhead = game.getSquare(square);

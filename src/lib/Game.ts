@@ -1,46 +1,56 @@
-import { BoardSquares, Move, PieceSpecies, Player, Vec2 } from "../types/TaikyokuShogi";
+import { Move, PieceSpecies, Player, Vec2 } from "../types/TaikyokuShogi";
 import Piece from "./Piece";
 import { parseTsfen } from "./tsfen";
-import { create36x36 } from "./utils";
+import { TwoWayNumericalMapping } from "./utils";
 import * as vec2 from "./vec2";
 
 export default class Game {
-	#squares: BoardSquares;
-	#moveCounter: number;
+	readonly #squares: (Piece | null)[] = Array(1296).fill(null);;
+	#moveCounter: number = 0;
 	get moveCounter() {
 		return this.#moveCounter;
 	}
 	
-	constructor(startingLayout?: BoardSquares | string, moveCounter?: number) {
-		if(startingLayout) {
-			if(typeof startingLayout == "string") {
-				[this.#squares, this.#moveCounter] = parseTsfen(startingLayout);
-			} else {
-				this.#squares = startingLayout;
-				this.#moveCounter = moveCounter ?? 0;
-			}
-		} else {
-			this.#squares = create36x36<Piece | null>(null);
-			this.#moveCounter = 0;
-		};
-		// this.shuffle(200);
+	readonly #moveCache: Move[][] = Array(1296).fill(null).map(() => []);
+	readonly twoWayAttackMap: TwoWayNumericalMapping = new TwoWayNumericalMapping();
+	
+	constructor(initialState?: string) {
+		if(initialState) {
+			const [squares, moveCounter] = parseTsfen(initialState);
+			squares.forEach((col, x) => {
+				col.forEach((square, y) => {
+					this.setSquare([x, y], square);
+				});
+			});
+			this.#moveCounter = moveCounter;
+		}
+		// this.shuffle(3805);
 	}
 	getSquare(pos: Vec2): Piece | null {
-		return this.#squares[pos[0]]?.[pos[1]] ?? null;
+		return this.#squares[this.posToI(pos)] ?? null;
 	}
 	setSquare(pos: Vec2, piece: Piece | null) {
-		if(pos[0] < 0 || pos[0] > 35 || pos[1] < 0 || pos[1] > 35) {
+		if(!vec2.isWithinBounds(pos, [0, 0], [36, 36])) {
 			throw new Error(`Cannot set square at (${pos[0]}, ${pos[1]}) to ${piece?.species || "empty"}: Out of bounds`);
 		}
-		this.#squares[pos[0]][pos[1]] = piece;
+		if(piece && this.getSquare(pos)) {
+			this.setSquare(pos, null); // not the best...
+		}
+		const posI = this.posToI(pos);
+		this.#squares[posI] = piece;
+		
+		this.twoWayAttackMap.getBackwards(posI)?.forEach(attackingPos => {
+			this.#generateMovesAndAttacks(attackingPos);
+		});
+		this.#generateMovesAndAttacks(posI);
 	}
 	makeMove(move: Move) {
 		const movingPiece = this.getSquare(move.start);
 		if(!movingPiece) {
 			throw new Error(`Cannot make move: No piece at ${vec2.stringify(move.start)}`);
 		}
-		this.setSquare(move.end, movingPiece);
 		this.setSquare(move.start, null);
+		this.setSquare(move.end, movingPiece);
 		
 		if(movingPiece.canPromote()) {
 			const positionsToCheck = [move.end];
@@ -68,12 +78,22 @@ export default class Game {
 		this.#moveCounter++;
 	}
 	pieceCanMove(piecePos: Vec2): boolean {
-		const piece = this.getSquare(piecePos);
-		return piece?.canMove(piecePos, this) ?? false;
+		return this.getMovesAtSquare(piecePos).length > 0;
+	}
+	pieceCanMoveDisregardingCurrentPlayer(piecePos: Vec2): boolean {
+		return this.getMovesAtSquareDisregardingCurrentPlayer(piecePos).length > 0;
 	}
 	getMovesAtSquare(piecePos: Vec2): Move[] {
-		const piece = this.getSquare(piecePos)!;
-		return piece.getMoves(piecePos, this);
+		const piece = this.getSquare(piecePos);
+		if(piece?.owner != this.getCurrentPlayer()) {
+			// important: don't remove this piece's moves from the cache if it's the other player's turn
+			return [];
+		}
+		return this.getMovesAtSquareDisregardingCurrentPlayer(piecePos);
+	}
+	getMovesAtSquareDisregardingCurrentPlayer(piecePos: Vec2): Move[] {
+		const cacheKey = this.posToI(piecePos);
+		return this.#moveCache[cacheKey];
 	}
 	getCurrentPlayer(): Player {
 		return this.moveCounter % 2 == 0? Player.Sente : Player.Gote;
@@ -100,5 +120,21 @@ export default class Game {
 			this.setSquare([x1, y1], this.getSquare([x2, y2]));
 			this.setSquare([x2, y2], t);
 		}
+	}
+	
+	#generateMovesAndAttacks(posI: number) {
+		const pos = this.iToPos(posI);
+		const piece = this.getSquare(pos);
+		const [moves, attacks] = piece?.getMovesAndAttackingSquares(pos, this) ?? [[], []];
+		this.#moveCache[posI] = moves;
+		this.twoWayAttackMap.setForwards(posI, attacks.map(attack => this.posToI(attack)));
+		// console.log(`calculating moves/attacks for ${piece?.species ?? "[empty]"} at`, pos, moves, attacks);
+	}
+	
+	posToI(pos: Vec2): number {
+		return pos[0] * 36 + pos[1];
+	}
+	iToPos(i: number): Vec2 {
+		return [~~(i / 36), i % 36];
 	}
 }

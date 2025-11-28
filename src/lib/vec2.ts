@@ -18,6 +18,9 @@ export function equals(a: Vec2, b: Vec2): boolean {
 export function stringify(v: Vec2) {
 	return `(${v[0]}, ${v[1]})`;
 }
+export function isWithinBounds([x, y]: Vec2, [minX, minY]: Vec2, [maxX, maxY]: Vec2): boolean {
+	return x >= minX && x < maxX && y >= minY && y < maxY;
+}
 
 export class Set {
 	#values: [number, number][] = [];

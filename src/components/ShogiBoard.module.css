@@ -23,13 +23,28 @@
 			border-bottom: var(--border);
 		}
 		
-		&.selected {
-			background-color: #30A0F088;
-			cursor: pointer;
-		}
 		&.moveTarget {
 			background-color: #c330f088;
 			cursor: pointer;
 		}
+		
+		/* debug highlights */
+		&.inAttackMap {
+			background-color: red;
+		}
+		&.inReverseAttackMap {
+			background-color: green;
+			&.inAttackMap {
+				background: linear-gradient(red 50%, green 50%);
+			}
+		}
+	}
+	
+	&.sente:not(.hasSelectedSquare) > div.sente.canMove,
+	&.gote:not(.hasSelectedSquare) > div.gote.canMove,
+	> div.selected {
+		
+		background-color: #30A0F088;
+		cursor: pointer;
 	}
 }

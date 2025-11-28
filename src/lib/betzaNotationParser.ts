@@ -22,15 +22,15 @@ const abbreviations = {
 };
 
 export const directions = {
-	F: [0, 1],
-	FR: [1, 1],
-	R: [1, 0],
-	BR: [1, -1],
-	B: [0, -1],
-	BL: [-1, -1],
-	L: [-1, 0],
-	FL: [-1, 1]
-} as const;
+	F: [0, 1] as Vec2,
+	FR: [1, 1] as Vec2,
+	R: [1, 0] as Vec2,
+	BR: [1, -1] as Vec2,
+	B: [0, -1] as Vec2,
+	BL: [-1, -1] as Vec2,
+	L: [-1, 0] as Vec2,
+	FL: [-1, 1] as Vec2
+};
 export type MovementDir = keyof typeof directions;
 
 export const parseBetzaNotation = cacheUnaryFunc((betza: string): PieceMovements => {

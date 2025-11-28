@@ -21,8 +21,12 @@ export default defineConfig({
 			name: "copy-404-for-github-pages",
 			closeBundle() {
 				const dist = path.resolve("dist");
-				fs.copyFileSync(path.join(dist, "404", "index.html"), path.join(dist, "404.html"));
-				console.log(pc.green("✓ Copied 404/index.html to 404.html for GitHub Pages"));
+				try {
+					fs.copyFileSync(path.join(dist, "404", "index.html"), path.join(dist, "404.html"));
+					console.log(pc.green("✓ Copied 404/index.html to 404.html for GitHub Pages"));
+				} catch(e) {
+					console.error(pc.red(`Failed copying 404/index.html to 404.html: ${e}`));
+				}
 			}
 		}
 	],

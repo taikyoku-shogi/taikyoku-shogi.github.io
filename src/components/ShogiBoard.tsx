@@ -10,10 +10,12 @@ import pieceClickAudio from "../assets/pieceClick.mp3";
 
 export default function ShogiBoard({
 	game,
-	bottomPlayer = Player.Sente
+	bottomPlayer = Player.Sente,
+	debug = false
 }: {
 	game: Game,
-	bottomPlayer?: Player
+	bottomPlayer?: Player,
+	debug?: boolean
 }) {
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const contElRef = useRef<HTMLDivElement | null>(null);
@@ -27,7 +29,6 @@ export default function ShogiBoard({
 	const calculateBoardPos = useCallback(([x, y]: [number, number]): Vec2 => {
 		return bottomPlayer == Player.Sente? [x, y] : [35 - x, 35 - y];
 	}, [bottomPlayer]);
-	
 	
 	const clearSelected = useCallback(() => {
 		setSelectedSquare(null);
@@ -48,11 +49,10 @@ export default function ShogiBoard({
 		const y = +cell.dataset.y!;
 		if(cell.classList.contains(styles.moveTarget)) {
 			const move = moves!.find(move => vec2.equals(move.end, [x, y]));
-			console.log("making move:", move);
 			game.makeMove(move!);
 			audioRef.current!.play();
 			clearSelected();
-		} else if(!selectedSquare && cell.classList.contains(styles.selected)) {
+		} else if(!selectedSquare && cell.classList.contains(styles.canMove) && (contElRef.current!.classList.contains(styles.sente) == cell.classList.contains(styles.sente))) {
 			const boardPos = calculateBoardPos([x, y]);
 			const moves = game.getMovesAtSquare(boardPos);
 			setMoves(moves);
@@ -63,6 +63,8 @@ export default function ShogiBoard({
 		}
 	};
 	
+	const selectedPieceCacheKey = selectedSquare? game.posToI(selectedSquare) : -1;
+	
 	return (
 		<>
 			<audio
@@ -71,8 +73,11 @@ export default function ShogiBoard({
 			></audio>
 			<div
 				ref={contElRef}
-				className={styles.board}
-				data-current-player={currentPlayer == Player.Sente? "sente" : "gote"}
+				className={joinClasses(
+					styles.board,
+					selectedSquare && styles.hasSelectedSquare,
+					currentPlayer == Player.Sente? styles.sente : styles.gote
+				)}
 				onMouseDown={handleClick}
 			>
 				{range(36).flatMap(y => (
@@ -81,8 +86,11 @@ export default function ShogiBoard({
 						const piece = game.getSquare(boardPos);
 						
 						const isMoveTarget = moveTargets?.has(boardPos);
-						const canBeSelected = !selectedSquare && game.pieceCanMove(boardPos);
+						const canMove = game.pieceCanMoveDisregardingCurrentPlayer(boardPos);
 						const isSelectedSquare = selectedSquare && vec2.equals(selectedSquare, boardPos);
+						
+						const inAttackMap = game.twoWayAttackMap.getForwards(selectedPieceCacheKey)?.has(x * 36 + y);
+						const inReverseAttackMap = game.twoWayAttackMap.getBackwards(selectedPieceCacheKey)?.has(x * 36 + y);
 						
 						return (
 							<BoardSquare
@@ -90,8 +98,12 @@ export default function ShogiBoard({
 								y={y}
 								piece={piece}
 								className={joinClasses(
-									(isSelectedSquare || canBeSelected) && styles.selected,
-									isMoveTarget && styles.moveTarget
+									canMove && styles.canMove,
+									isSelectedSquare && styles.selected,
+									isMoveTarget && styles.moveTarget,
+									piece && (piece.owner == Player.Sente? styles.sente : styles.gote),
+									debug && inAttackMap && styles.inAttackMap,
+									debug && inReverseAttackMap && styles.inReverseAttackMap
 								)}
 							/>
 						)

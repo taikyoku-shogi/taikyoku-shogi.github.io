@@ -16,12 +16,12 @@ export function parseTsfen(tsfen: string): [BoardSquares, number] {
 			if(/^\d+$/.test(cell)) {
 				x += +cell;
 			} else if(/^[a-z]+\d*$/.test(cell)) {
-				const [_, species, count = 1] = cell.match(/^([a-z]+)(\d+)?$/);
+				const [_, species, count = 1] = cell.match(/^([a-z]+)(\d+)?$/)!;
 				for(let i = 0; i < +count; i++) {
 					squares[x++][y] = new Piece(species.toUpperCase() as PieceSpecies, false, Player.Sente);
 				}
 			} else if(/^[A-Z]+\d*$/.test(cell)) {
-				const [_, species, count = 1] = cell.match(/^([A-Z]+)(\d+)?$/);
+				const [_, species, count = 1] = cell.match(/^([A-Z]+)(\d+)?$/)!;
 				for(let i = 0; i < +count; i++) {
 					squares[x++][y] = new Piece(species as PieceSpecies, false, Player.Gote);
 				}
