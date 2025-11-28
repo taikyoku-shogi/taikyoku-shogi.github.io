@@ -6,11 +6,19 @@
 	vertical-align: top;
 	text-align: left;
 	
-	background: #ecedc8;
+	background: var(--header-bg);
 	border-radius: 1em;
+	
+	@media (prefers-color-scheme: dark) {
+		background: #36454F;
+		outline-color: #232D33;
+	}
 	
 	&:target {
 		outline: 5px solid gold;
+		@media (prefers-color-scheme: dark) {
+			outline-color: #526C7E;
+		}
 	}
 	
 	> * {

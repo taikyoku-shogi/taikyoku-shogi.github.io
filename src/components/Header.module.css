@@ -2,13 +2,13 @@
 	height: var(--header-height);
 	display: flex;
 	justify-content: flex-end;
-	background-color: #ECEDC8;
+	background-color: var(--header-bg);
 	
 	nav {
 		display: flex;
 	}
 	a {
-		color: black;
+		color: black !important;
 		padding: 0.75rem;
 		text-decoration: none;
 

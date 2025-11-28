@@ -1,10 +1,15 @@
 @import "./fonts.css";
 
 :root {
+	--header-height: min(50px, 6.7vh);
+	--header-bg: #ECEDC8;
+	--light-mode-text-color: #222;
+	--darkish: #27292D;
+	
 	font-family: Catamaran, "Trebuchet MS", "Noto Sans JP", Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 	line-height: 1.5;
 	
-	color: #222;
+	color: var(--light-mode-text-color);
 	background-color: white;
 	
 	scroll-behavior: smooth;
@@ -14,7 +19,6 @@
 	-moz-osx-font-smoothing: grayscale;
 	-webkit-text-size-adjust: 100%;
 	
-	--header-height: min(50px, 6.7vh);
 }
 
 body {
@@ -29,9 +33,24 @@ table {
 	}
 	th {
 		background: #DADBDB;
+		
+		@media (prefers-color-scheme: dark) {
+			background: var(--darkish);
+		}
 	}
 	td {
 		background: #F8F9FA;
+		
+		@media (prefers-color-scheme: dark) {
+			background-color: #202122;
+		}
+	}
+}
+a {
+	/* these are the ones used in VitePress */
+	color: #A8B1FF;
+	&:visited {
+		color: #5C73E7;
 	}
 }
 main > section {
@@ -46,7 +65,7 @@ main > section {
 
 @media (prefers-color-scheme: dark) {
 	:root {
-		color: #ccc;
-		background-color: #1a1a1a;
+		color: #E7E7E7;
+		background-color: #2D2D2D;
 	}
 }

@@ -1,3 +1,6 @@
+.stepMove, .rangeMove, .jumpMove {
+	color: var(--light-mode-text-color);
+}
 .stepMove {
 	background: #D0D0F0 !important;
 }

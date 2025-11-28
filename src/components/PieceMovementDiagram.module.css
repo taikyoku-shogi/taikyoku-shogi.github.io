@@ -16,8 +16,16 @@
 		text-align: center;
 		background: #F8F9FA;
 		
+		@media (prefers-color-scheme: dark) {
+			background: #4B5563;
+		}
+		
 		&.piece {
 			background: #E0E0E0;
+			
+			@media (prefers-color-scheme: dark) {
+				background: var(--darkish);
+			}
 		}
 	}
 }
