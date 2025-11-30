@@ -24,7 +24,18 @@ export function joinClasses(...classes: any[]): string {
 	return classes.filter(c => typeof c == "string").join(" ");
 }
 export function isNumber(x: any): x is number {
-	return parseInt(x) === +x;
+	try {
+		return parseInt(x) === +x;
+	} catch {
+		return false;
+	}
+}
+/** String.replaceAll() but done one at a time, such that the "offset" parameter in the replacer function always reflects the true index in the return string. */
+export function replaceAllIncrementally(s: string, searchValue: string | RegExp, replacer: (substring: string, ...args: any[]) => string): string {
+	while(typeof searchValue == "string"? s.includes(searchValue) : searchValue.test(s)) {
+		s = s.replace(searchValue, replacer);
+	}
+	return s;
 }
 export function countItems<T>(arr: T[]): Map<T, number> {
 	return arr.reduce((acc, item) => {

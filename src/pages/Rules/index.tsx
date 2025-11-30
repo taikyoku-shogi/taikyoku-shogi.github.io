@@ -4,13 +4,12 @@ const pieceEntries: PieceEntries = piecesCsv;
 
 import PieceInfo from "../../components/PieceInfo";
 import type { PieceEntries } from "../../types/pieces.csv";
-import { JumpMoveTd, RangeMoveTd, StepMoveTd } from "../../components/pieceMovementSymbols";
+import { JumpMoveTd, RangeCaptureMoveTd, RangeMoveTd, StepMoveTd } from "../../components/pieceMovementSymbols";
 import SearchInput from "../../components/SearchInput";
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { joinClasses } from "../../lib/utils";
 import styles from "./index.module.css";
 import { PieceSpecies } from "../../types/TaikyokuShogi";
-import { pieceNames } from "../../lib/pieceData";
 
 export default function RulesPage() {
 	const searchInputRef = useRef<HTMLInputElement | null>(null);
@@ -63,6 +62,19 @@ export default function RulesPage() {
 						<tr>
 							<JumpMoveTd/>
 							<td>Jumps directly to this square.</td>
+						</tr>
+						<tr>
+							<RangeCaptureMoveTd x={0} y={1}/>
+							<td rowSpan={4}>Flies along a straight line, capturing all pieces it jumps over.<br/>Pieces on the same team can also be captured if jumped over.<br/>All pieces captured must be of a lower rank.</td>
+						</tr>
+						<tr>
+							<RangeCaptureMoveTd x={1} y={0}/>
+						</tr>
+						<tr>
+							<RangeCaptureMoveTd x={1} y={-1}/>
+						</tr>
+						<tr>
+							<RangeCaptureMoveTd x={1} y={1}/>
 						</tr>
 					</tbody>
 				</table>

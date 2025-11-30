@@ -1,9 +1,9 @@
-import { PieceMovements, Vec2 } from "../types/TaikyokuShogi";
+import { CompoundPieceMovement, PieceMovements, Vec2 } from "../types/TaikyokuShogi";
 import { abs } from "./math";
-import { cacheUnaryFunc, isNumber } from "./utils";
+import { cacheUnaryFunc, isNumber, replaceAllIncrementally } from "./utils";
 import * as vec2 from "./vec2";
 
-const stepAtoms = {
+const baseAtoms = {
 	W: [1, 0] as Vec2,
 	F: [1, 1] as Vec2,
 	D: [2, 0] as Vec2,
@@ -31,51 +31,83 @@ export const directions = {
 	L: [-1, 0] as Vec2,
 	FL: [-1, 1] as Vec2
 };
-export type MovementDir = keyof typeof directions;
 
-export const parseBetzaNotation = cacheUnaryFunc((betza: string): PieceMovements => {
+export const parseBetzaNotation = ((betzaString: string, name: string): PieceMovements => {
 	// keep original string for error logging
-	const ogBetza = betza;
+	const ogBetza = betzaString;
+	
+	// these are for range capturing pieces (the actual range capturing move generation and logic is handled elsewhere)
+	betzaString = betzaString.replaceAll(/\(\(c([A-Z])cd\1\)-\1\)/g, "$1");
 	Object.entries(abbreviations).forEach(([abbreviation, atoms]) => {
-		betza = betza.replaceAll(abbreviation, atoms);
+		betzaString = betzaString.replaceAll(abbreviation, atoms);
 	});
 	// strings like "fQ2" need to be expanded into "fF2fW2" - a simple replacement would product "fFW2"
-	betza = betza.replaceAll(/([a-z]*)Q(\d)?/g, (_, mods, range) => {
+	betzaString = betzaString.replaceAll(/([a-z]*)Q(\d)?/g, (_, mods, range) => {
 		if(range) {
 			return `${mods}F${range}${mods}W${range}`;
 		}
 		return `${mods}FF${mods}WW`;
 	});
+	const newAtoms: Record<symbol, Vec2> = {};
+	const atomReplacements: [number, symbol][] = [];
+	betzaString = replaceAllIncrementally(betzaString, /\((\d+),(\d+)\)/, (_, xStep, yStep, i) => {
+		const step: Vec2 = [+xStep, +yStep];
+		const symbol = Symbol(`Step: ${vec2.stringify(step)}`);
+		newAtoms[symbol] = step;
+		atomReplacements.push([i, symbol]);
+		return "_"; // this is a dummy character and will be replaced with the symbol once the string is turned into an array
+	});
+	const betza: (string | symbol)[] = [...betzaString];
+	atomReplacements.forEach(([i, symbol]) => {
+		betza[i] = symbol;
+	});
+	const allAtoms: Record<keyof typeof baseAtoms | symbol, Vec2> = { ...baseAtoms, ...newAtoms };
 	
 	const slideMoves: PieceMovements["slides"] = {};
 	const jumpMoves: Vec2[] = [];
+	const compoundMoves: CompoundPieceMovement[] = [];
 	
 	let dirModifiers = "";
-	let i = 0;
-	while(i < betza.length) {
+	for(let i = 0; i < betza.length; i++) {
 		const char = betza[i];
 		
 		if(char == "(") {
 			// TODO: make it actually look at brackets
 			let brackets = 1;
+			const bracketsStart = i + 1;
+			let hyphenI: number = -1;
 			while(i < betza.length) {
 				i++;
 				if(betza[i] == "(") brackets++;
 				else if(betza[i] == ")" && !--brackets) break;
+				else if(betza[i] == "-") hyphenI = i;
 			}
+			const betzaInsideBracketsWithNewAtoms = betza.slice(bracketsStart, i);
+			const rawBetzaInsideBrackets = betzaInsideBracketsWithNewAtoms.map(char => typeof char == "symbol"? `(${newAtoms[char]})` : char).join("");
+			// if(hyphenI == -1) {
+			// 	console.error(`Couldn't find hyphen inside bracketed Betza expression: "${rawBetzaInsideBrackets}"`);
+			// }
 			i++;
-		}
-		if(char.toLowerCase() == char) {
+			// console.log(`${name}: brackets from ${bracketsStart} to ${i}:`, rawBetzaInsideBrackets);
+			// if(hyphenI > -1) {
+			// 	const [a, b] = rawBetzaInsideBrackets.split("-");
+			// 	console.log(parseBetzaNotation(a, name), parseBetzaNotation(b, name))
+			// }
+		} else if(typeof char == "string" && char.toLowerCase() == char) {
 			dirModifiers += char;
 		} else {
 			if(isValidAtomChar(char)) {
 				let range = 1;
-				if(isNumber(betza[i + 1])) {
-					range = +betza[++i];
-				} else if(betza[i + 1] == char) {
+				const nextChar = betza[i + 1];
+				if(isNumber(nextChar)) {
+					range = +nextChar;
+					i++;
+				} else if(char == nextChar) {
 					// this comes from the B -> FF and R -> WW substitutions. I guess they should be doing a more advanced one like the queen.
-					if(isNumber(betza[i + 2])) {
-						range = +betza[i += 2];
+					let nextNextChar = betza[i + 2];
+					if(isNumber(nextNextChar)) {
+						range = +nextNextChar;
+						i += 2;
 					} else {
 						range = Infinity;
 						i++;
@@ -109,7 +141,7 @@ export const parseBetzaNotation = cacheUnaryFunc((betza: string): PieceMovements
 							if(dir == "FL" && (dirModifiers == "fl" || dirModifiers == "f" || dirModifiers == "l")) return true;
 							if(dir == "BR" && (dirModifiers == "br" || dirModifiers == "b" || dirModifiers == "r")) return true;
 							if(dir == "BL" && (dirModifiers == "bl" || dirModifiers == "b" || dirModifiers == "l")) return true;
-						})
+						});
 					}
 					dirsToAdd.forEach(dir => {
 						if(slideMoves[dir]) {
@@ -120,8 +152,8 @@ export const parseBetzaNotation = cacheUnaryFunc((betza: string): PieceMovements
 						}
 					});
 				} else {
-					char
-					let rots = generateRotations(stepAtoms[char]);
+					const atom = allAtoms[char];
+					let rots = generateRotations(atom);
 					if(dirModifiers.length) {
 						rots = rots.filter(([x, y]) => {
 							if(x && y && abs(x) != abs(y)) {
@@ -145,17 +177,17 @@ export const parseBetzaNotation = cacheUnaryFunc((betza: string): PieceMovements
 			}
 			dirModifiers = "";
 		}
-		i++;
 	}
 	
 	return {
 		slides: slideMoves,
-		jumps: jumpMoves
+		jumps: jumpMoves,
+		compoundMoves
 	};
 });
-function isValidAtomChar(char: string): char is keyof typeof stepAtoms {
+function isValidAtomChar(char: any): char is (keyof typeof baseAtoms | symbol) {
 	// why oh why doesn't typescript do this automatically...
-	return char in stepAtoms;
+	return char in baseAtoms || typeof char == "symbol";
 }
 function generateRotations(step: Vec2): Vec2[] {
 	const allDirections: Vec2[] = [

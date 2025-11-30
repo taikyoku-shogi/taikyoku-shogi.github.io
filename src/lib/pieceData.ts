@@ -26,7 +26,7 @@ export const pieceRanks: Map<PieceSpecies, number> = new Map(Object.entries({
 	FID: 1,
 	FCR: 1
 }));
-export const pieceMovements: Map<PieceSpecies, PieceMovements> = new Map(pieces.map(piece => [piece.code, parseBetzaNotation(piece.movement)]));
+export const pieceMovements: Map<PieceSpecies, PieceMovements> = new Map(pieces.map(piece => [piece.code, parseBetzaNotation(piece.movement, piece.name)]));
 export const rangeCapturingPieces: Set<PieceSpecies> = new Set(["GG", "VG", "FLG", "AG", "FID", "FCR"]);
 
 function doesPiecePromote(piece: PieceEntry): piece is {

@@ -1,13 +1,13 @@
-import { MovementDir, directions } from "../lib/betzaNotationParser";
+import { directions } from "../lib/betzaNotationParser";
 import { abs, max } from "../lib/math";
 import Piece from "../lib/Piece";
-import { pieceMovements, piecesInitiallyOnBoard } from "../lib/pieceData";
+import { pieceMovements, piecesInitiallyOnBoard, rangeCapturingPieces } from "../lib/pieceData";
 import { range } from "../lib/utils";
-import { PieceMovements, PieceSpecies, Player } from "../types/TaikyokuShogi";
+import { MovementDir, PieceMovements, PieceSpecies, Player } from "../types/TaikyokuShogi";
 
 import ShogiPiece from "./ShogiPiece";
 import styles from "./PieceMovementDiagram.module.css";
-import { JumpMoveTd, RangeMoveTd } from "./pieceMovementSymbols";
+import { JumpMoveTd, RangeCaptureMoveTd, RangeMoveTd } from "./pieceMovementSymbols";
 import { StepMoveTd } from "./pieceMovementSymbols";
 import { useMemo } from "preact/hooks";
 import { useInView } from "../lib/hooks";
@@ -15,6 +15,7 @@ import { useInView } from "../lib/hooks";
 enum MovementType {
 	Step,
 	Range,
+	RangeCapture,
 	Jump
 }
 
@@ -28,6 +29,7 @@ export default function PieceMovementDiagram({
 	pieceSpecies: PieceSpecies
 }) {
 	const movements = pieceMovements.get(pieceSpecies)!;
+	const isRangeCapturingPiece = rangeCapturingPieces.has(pieceSpecies);
 	
 	const maxHorizontalSlide = maxSlideInDir(movements, horizontalDirs);
 	const maxHorizontalJump = max(0, ...movements.jumps.map(([x]) => abs(x)));
@@ -55,7 +57,7 @@ export default function PieceMovementDiagram({
 			if(grid[y]?.[x] === undefined) {
 				break;
 			}
-			grid[y][x] = range == Infinity? MovementType.Range : MovementType.Step;
+			grid[y][x] = range == Infinity? isRangeCapturingPiece? MovementType.RangeCapture : MovementType.Range : MovementType.Step;
 			x += step[0];
 			y += step[1]
 		}
@@ -86,6 +88,8 @@ export default function PieceMovementDiagram({
 							return <StepMoveTd/>;
 						} else if(move === MovementType.Range) {
 							return <RangeMoveTd x={x} y={y}/>;
+						} else if(move === MovementType.RangeCapture) {
+							return <RangeCaptureMoveTd x={x} y={y}/>;
 						} else if(move === MovementType.Jump) {
 							return <JumpMoveTd/>;
 						} else {

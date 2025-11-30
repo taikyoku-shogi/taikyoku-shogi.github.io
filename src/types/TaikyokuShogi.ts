@@ -19,7 +19,12 @@ export interface Move {
 	end: Vec2;
 	intermediateSteps?: Vec2[];
 }
+export interface CompoundPieceMovement extends Omit<PieceMovements, "compoundMoves"> {
+	canContinueAfterCapture: boolean;
+}
+export type MovementDir = "F" | "FR" | "R" | "BR" | "B" | "BL" | "L" | "FL";
 export interface PieceMovements {
-	slides: Partial<Record<"F" | "FR" | "R" | "BR" | "B" | "BL" | "L" | "FL", number>>;
+	slides: Partial<Record<MovementDir, number>>;
 	jumps: Vec2[];
+	compoundMoves: CompoundPieceMovement[];
 }

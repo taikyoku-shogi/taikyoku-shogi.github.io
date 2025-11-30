@@ -66,7 +66,7 @@ export default class Game {
 			}
 		}
 		
-		if(movingPiece.isRangeCapturing()) {
+		if(movingPiece.isRangeCapturing) {
 			const movementDir = vec2.sign(vec2.sub(move.end, move.start));
 			for(let pos = vec2.add(move.start, movementDir); !vec2.equals(pos, move.end); pos = vec2.add(pos, movementDir)) {
 				this.setSquare(pos, null);

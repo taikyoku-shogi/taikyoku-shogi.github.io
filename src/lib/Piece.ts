@@ -2,7 +2,7 @@ import { PieceEntry } from "../types/pieces.csv";
 import { Move, PieceMovements, PieceSpecies, Player, Vec2 } from "../types/TaikyokuShogi";
 import { directions } from "./betzaNotationParser";
 import Game from "./Game";
-import { pieceMovements, piecePromotions, piecesInitiallyOnBoard, rangeCapturingPieces } from "./pieceData";
+import { pieceMovements, piecePromotions, pieceRanks, piecesInitiallyOnBoard, rangeCapturingPieces } from "./pieceData";
 import * as vec2 from "./vec2";
 
 enum SquareStatus {
@@ -15,6 +15,8 @@ export default class Piece {
 	readonly species: PieceSpecies;
 	readonly promoted: boolean;
 	readonly owner: Player;
+	readonly isRangeCapturing: boolean;
+	readonly rank: number;
 	
 	readonly #movements: PieceMovements;
 	
@@ -22,8 +24,10 @@ export default class Piece {
 		this.species = species;
 		this.promoted = promoted;
 		this.owner = owner;
+		this.isRangeCapturing = rangeCapturingPieces.has(species);
+		this.rank = pieceRanks.get(species) ?? 0;
 		
-		this.#movements = pieceMovements.get(this.species)!;
+		this.#movements = pieceMovements.get(species)!;
 	}
 	static fromPieceEntry(pieceEntry: PieceEntry): Piece {
 		return new Piece(pieceEntry.code, !piecesInitiallyOnBoard.has(pieceEntry.code), Player.Sente);
@@ -42,8 +46,9 @@ export default class Piece {
 		const promotedSpecies = piecePromotions.get(this.species)!;
 		return new Piece(promotedSpecies, true, this.owner);
 	}
-	#getAttackingSquares(pos: Vec2, game: Game): Vec2[] {
-		const targetLocations = new vec2.Set();
+	getMovesAndAttackingSquares(pos: Vec2, game: Game): [Move[], Vec2[]] {
+		const attackingSquares = new vec2.Set();
+		const validMoveLocations = new vec2.Set();
 		
 		Object.entries(this.#movements.slides).forEach(([dir, range]) => {
 			const rawStep = directions[dir];
@@ -53,8 +58,11 @@ export default class Piece {
 				if(!vec2.isWithinBounds(target, [0, 0], [36, 36])) {
 					break;
 				}
-				const status = this.#getSquareStatus(game, target);
-				targetLocations.add(target);
+				const status = this.#getSquareStatus(game, target, this.isRangeCapturing && range == Infinity);
+				attackingSquares.add(target);
+				if(status != SquareStatus.Blocked) {
+					validMoveLocations.add(target);
+				}
 				if(status != SquareStatus.Empty) {
 					break;
 				}
@@ -64,35 +72,31 @@ export default class Piece {
 		this.#movements.jumps.forEach(rawJump => {
 			const jump = this.#movementPosToBoardPos(rawJump);
 			const target = vec2.add(pos, jump);
-			targetLocations.add(target);
+			attackingSquares.add(target);
+			if(this.#getSquareStatus(game, target) != SquareStatus.Blocked) {
+				validMoveLocations.add(target);
+			}
 		});
 		
-		return targetLocations.values;
-	}
-	getMovesAndAttackingSquares(pos: Vec2, game: Game): [Move[], Vec2[]] {
-		const attackingSquares = this.#getAttackingSquares(pos, game);
-		const validTargets = attackingSquares.filter(square => this.#getSquareStatus(game, square) != SquareStatus.Blocked);
-		const moves = validTargets.map(end => ({
+		const moves = validMoveLocations.values.map(end => ({
 			start: pos,
 			end
 		}));
-		return [moves, attackingSquares];
-	}
-	isRangeCapturing(): boolean {
-		return rangeCapturingPieces.has(this.species);
+		
+		return [moves, attackingSquares.values];
 	}
 	
 	#movementPosToBoardPos(movement: Vec2): Vec2 {
-		return this.owner == Player.Sente? [movement[0], -movement[1]] : [-movement[0], movement[1]];;
+		return this.owner == Player.Sente? [movement[0], -movement[1]] : [-movement[0], movement[1]];
 	}
-	#getSquareStatus(game: Game, square: Vec2): SquareStatus {
+	#getSquareStatus(game: Game, square: Vec2, isRangeCapturingMove: boolean = false): SquareStatus {
 		if(!vec2.isWithinBounds(square, [0, 0], [36, 36])) {
 			return SquareStatus.Blocked;
 		}
 		const pieceAhead = game.getSquare(square);
-		if(!pieceAhead) {
+		if(!pieceAhead || (isRangeCapturingMove && pieceAhead.rank < this.rank)) {
 			return SquareStatus.Empty;
 		}
-		return pieceAhead.owner == this.owner? SquareStatus.Blocked : SquareStatus.CanCapture;
+		return pieceAhead.owner == this.owner || isRangeCapturingMove? SquareStatus.Blocked : SquareStatus.CanCapture;
 	}
 }

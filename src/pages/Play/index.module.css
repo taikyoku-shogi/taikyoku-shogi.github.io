@@ -1,0 +1,9 @@
+.gameWrapper {
+	display: grid;
+	@media (orientation: landscape) {
+		grid-template-columns: auto 1fr;
+	}
+	@media (orientation: portrait) {
+		grid-template-rows: auto 1fr;
+	}
+}
