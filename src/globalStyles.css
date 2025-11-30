@@ -4,12 +4,17 @@
 	--header-height: min(50px, 6.7vh);
 	--header-bg: #ECEDC8;
 	--light-mode-text-color: #222;
+	--dark-mode-text-color: #E7E7E7;
+	--color: var(--light-mode-text-color);
+	--placeholder-color: #6B7280;
+	--bit-darker-color: #F9FAFB;
 	--darkish: #27292D;
+	--blue: #5C73E7;
 	
 	font-family: Catamaran, "Trebuchet MS", "Noto Sans JP", Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 	line-height: 1.5;
 	
-	color: var(--light-mode-text-color);
+	color: var(--color);
 	background-color: white;
 	
 	scroll-behavior: smooth;
@@ -39,18 +44,14 @@ table {
 		}
 	}
 	td {
-		background: #F8F9FA;
-		
-		@media (prefers-color-scheme: dark) {
-			background-color: #202122;
-		}
+		background: var(--bit-darker-color);
 	}
 }
 a {
 	/* these are the ones used in VitePress */
-	color: #A8B1FF;
+	color: var(--blue);
 	&:visited {
-		color: #5C73E7;
+		color: #3A5CCC;
 	}
 }
 main > section {
@@ -63,9 +64,15 @@ main > section {
 	min-height: 100vh;
 }
 
+.hidden {
+	display: none !important;
+}
+
 @media (prefers-color-scheme: dark) {
 	:root {
-		color: #E7E7E7;
+		--color: var(--dark-mode-text-color);
+		--placeholder-color: #D7D4D4;
+		--bit-darker-color: #202122;
 		background-color: #2D2D2D;
 	}
 }

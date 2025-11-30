@@ -1,22 +1,40 @@
-import { initialPieceCounts, pieceNames, piecePromotionReverseLookups, piecesInitiallyOnBoard } from "../lib/pieceData";
-import { PieceEntry } from "../types/pieces.csv";
 import { PieceSpecies } from "../types/TaikyokuShogi";
+import { initialPieceCounts, pieceKanjis, pieceNames, piecePromotionReverseLookups, piecePromotions, piecesInitiallyOnBoard } from "../lib/pieceData";
 import Kanji from "./Kanji";
 import styles from "./PieceInfo.module.css";
 import PieceMovementDiagram from "./PieceMovementDiagram";
+import { memo } from "preact/compat";
 
-export default function PieceInfo({
-	pieceEntry: pieceEntry
+export default memo(function PieceInfo({
+	pieceSpecies,
+	onAnchorClick
 }: {
-	pieceEntry: PieceEntry
+	pieceSpecies: PieceSpecies,
+	onAnchorClick?: (pieceSpecies: PieceSpecies) => void
 }) {
-	const initiallyOnBoard = piecesInitiallyOnBoard.has(pieceEntry.code);
-	const initialCount = initialPieceCounts.get(pieceEntry.code);
-	const promotedFrom = piecePromotionReverseLookups.get(pieceEntry.code);
+	const initiallyOnBoard = piecesInitiallyOnBoard.has(pieceSpecies);
+	const initialCount = initialPieceCounts.get(pieceSpecies);
+	const promotedFrom = piecePromotionReverseLookups.get(pieceSpecies);
+	
+	const LinkToPiece = ({
+		piece
+	}: {
+		piece: PieceSpecies
+	}) => (
+		<a href={`#${piece}`} onClick={onAnchorClick && (e => {
+			onAnchorClick(piece);
+			e.preventDefault();
+		})}>
+			{pieceNames.get(piece)}
+		</a>
+	);
 	
 	return (
-		<div className={styles.pieceInfo} id={pieceEntry.code}>
-			<h3>{pieceEntry.name} (<Kanji>{pieceEntry.kanji}</Kanji>)</h3>
+		<div
+			className={styles.pieceInfo}
+			id={pieceSpecies}
+		>
+			<h3>{pieceNames.get(pieceSpecies)} (<Kanji>{pieceKanjis.get(pieceSpecies)!}</Kanji>)</h3>
 			{promotedFrom && (
 				<p>Promoted from: {promotedFrom.map((piece, i) => (
 					<>
@@ -25,8 +43,8 @@ export default function PieceInfo({
 					</>
 				))}</p>
 			)}
-			{pieceEntry.promotion != "-"? (
-				<p>Promotes to: <LinkToPiece piece={pieceEntry.promotion}/></p>
+			{piecePromotions.has(pieceSpecies)? (
+				<p>Promotes to: <LinkToPiece piece={piecePromotions.get(pieceSpecies)!}/></p>
 			) : (
 				<p><i>Doesn't promote.</i></p>
 			)}
@@ -35,19 +53,7 @@ export default function PieceInfo({
 			) : (
 				<p><i>This piece only appears through promotion.</i></p>
 			)}
-			<PieceMovementDiagram pieceEntry={pieceEntry}/>
+			<PieceMovementDiagram pieceSpecies={pieceSpecies}/>
 		</div>
 	);
-}
-
-function LinkToPiece({
-	piece
-}: {
-	piece: PieceSpecies
-}) {
-	return (
-		<a href={`#${piece}`}>
-			{pieceNames.get(piece)}
-		</a>
-	);
-}
+});

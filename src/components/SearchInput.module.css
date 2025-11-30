@@ -1,0 +1,46 @@
+/* adapted from https://flowbite.com/docs/forms/search-input */
+.searchInput {
+	margin-left: auto;
+	margin-right: auto;
+	max-width: 28rem;
+	height: max-content;
+	display: block;
+	contain: layout;
+	
+	svg {
+		margin: auto;
+		padding-left: 0.75rem;
+		width: 1rem;
+		height: 1rem;
+		display: block;
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		
+		pointer-events: none;
+		color: var(--placeholder-color);
+	}
+	input {
+		display: block;
+		width: 100%;
+		padding: 0.4rem 0.75rem;
+		padding-left: 2.25rem;
+		background-color: var(--bit-darker-color);
+		border: 1px solid #D1D5DB;
+		font-family: inherit;
+		font-size: 1rem;
+		color: var(--color);
+		border-radius: 0.375rem;
+		box-shadow: 0 1px 2px #0000000D;
+		
+		&:focus {
+			outline: none;
+			border-color: var(--blue);
+			box-shadow: 0 0 0 4px #3B82F64D;
+		}
+		
+		&::placeholder {
+			color: var(--placeholder-color);
+		}
+	}
+}

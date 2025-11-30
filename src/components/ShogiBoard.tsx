@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "preact/hooks";
+import { Dispatch, StateUpdater, useCallback, useRef, useState } from "preact/hooks";
 import Game from "../lib/Game";
 import { joinClasses, range } from "../lib/utils";
 import { Move, Player, Vec2 } from "../types/TaikyokuShogi"
@@ -6,23 +6,24 @@ import styles from "./ShogiBoard.module.css";
 import * as vec2 from "../lib/vec2";
 import BoardSquare from "./BoardSquare";
 
-import pieceClickAudio from "../assets/pieceClick.mp3";
-
 export default function ShogiBoard({
 	game,
 	bottomPlayer = Player.Sente,
+	selectedSquare,
+	setSelectedSquare,
+	onMove,
 	debug = false
 }: {
 	game: Game,
 	bottomPlayer?: Player,
+	selectedSquare: Vec2 | null,
+	setSelectedSquare: Dispatch<Vec2 | null>,
+	onMove?: () => void,
 	debug?: boolean
 }) {
-	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const contElRef = useRef<HTMLDivElement | null>(null);
 	
 	const currentPlayer = game.getCurrentPlayer();
-	
-	const [selectedSquare, setSelectedSquare] = useState<Vec2 | null>(null);
 	const [moveTargets, setMoveTargets] = useState<vec2.Set | null>(null);
 	const [moves, setMoves] = useState<Move[] | null>(null);
 	
@@ -50,8 +51,8 @@ export default function ShogiBoard({
 		if(cell.classList.contains(styles.moveTarget)) {
 			const move = moves!.find(move => vec2.equals(move.end, [x, y]));
 			game.makeMove(move!);
-			audioRef.current!.play();
 			clearSelected();
+			onMove?.();
 		} else if(!selectedSquare && cell.classList.contains(styles.canMove) && (contElRef.current!.classList.contains(styles.sente) == cell.classList.contains(styles.sente))) {
 			const boardPos = calculateBoardPos([x, y]);
 			const moves = game.getMovesAtSquare(boardPos);
@@ -66,50 +67,44 @@ export default function ShogiBoard({
 	const selectedPieceCacheKey = selectedSquare? game.posToI(selectedSquare) : -1;
 	
 	return (
-		<>
-			<audio
-				ref={audioRef}
-				src={pieceClickAudio}
-			></audio>
-			<div
-				ref={contElRef}
-				className={joinClasses(
-					styles.board,
-					selectedSquare && styles.hasSelectedSquare,
-					currentPlayer == Player.Sente? styles.sente : styles.gote
-				)}
-				onMouseDown={handleClick}
-			>
-				{range(36).flatMap(y => (
-					range(36).map(x => {
-						const boardPos: [number, number] = calculateBoardPos([x, y]);
-						const piece = game.getSquare(boardPos);
-						
-						const isMoveTarget = moveTargets?.has(boardPos);
-						const canMove = game.pieceCanMoveDisregardingCurrentPlayer(boardPos);
-						const isSelectedSquare = selectedSquare && vec2.equals(selectedSquare, boardPos);
-						
-						const inAttackMap = game.twoWayAttackMap.getForwards(selectedPieceCacheKey)?.has(x * 36 + y);
-						const inReverseAttackMap = game.twoWayAttackMap.getBackwards(selectedPieceCacheKey)?.has(x * 36 + y);
-						
-						return (
-							<BoardSquare
-								x={x}
-								y={y}
-								piece={piece}
-								className={joinClasses(
-									canMove && styles.canMove,
-									isSelectedSquare && styles.selected,
-									isMoveTarget && styles.moveTarget,
-									piece && (piece.owner == Player.Sente? styles.sente : styles.gote),
-									debug && inAttackMap && styles.inAttackMap,
-									debug && inReverseAttackMap && styles.inReverseAttackMap
-								)}
-							/>
-						)
-					})
-				))}
-			</div>
-		</>
+		<div
+			ref={contElRef}
+			className={joinClasses(
+				styles.board,
+				selectedSquare && styles.hasSelectedSquare,
+				currentPlayer == Player.Sente? styles.sente : styles.gote
+			)}
+			onMouseDown={handleClick}
+		>
+			{range(36).flatMap(y => (
+				range(36).map(x => {
+					const boardPos: [number, number] = calculateBoardPos([x, y]);
+					const piece = game.getSquare(boardPos);
+					
+					const isMoveTarget = moveTargets?.has(boardPos);
+					const canMove = game.pieceCanMoveDisregardingCurrentPlayer(boardPos);
+					const isSelectedSquare = selectedSquare && vec2.equals(selectedSquare, boardPos);
+					
+					const inAttackMap = game.twoWayAttackMap.getForwards(selectedPieceCacheKey)?.has(x * 36 + y);
+					const inReverseAttackMap = game.twoWayAttackMap.getBackwards(selectedPieceCacheKey)?.has(x * 36 + y);
+					
+					return (
+						<BoardSquare
+							x={x}
+							y={y}
+							piece={piece}
+							className={joinClasses(
+								canMove && styles.canMove,
+								isSelectedSquare && styles.selected,
+								isMoveTarget && styles.moveTarget,
+								piece && (piece.owner == Player.Sente? styles.sente : styles.gote),
+								debug && inAttackMap && styles.inAttackMap,
+								debug && inReverseAttackMap && styles.inReverseAttackMap
+							)}
+						/>
+					)
+				})
+			))}
+		</div>
 	);
 }

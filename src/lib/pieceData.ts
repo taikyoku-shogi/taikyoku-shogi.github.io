@@ -1,4 +1,4 @@
-import { PieceSpecies } from "../types/TaikyokuShogi";
+import { PieceMovements, PieceSpecies } from "../types/TaikyokuShogi";
 
 // @ts-expect-error
 import piecesCsv from "../assets/pieces.csv";
@@ -7,6 +7,7 @@ const pieces: PieceEntries = piecesCsv;
 
 import initialTsfen from "../assets/initial.tsfen?raw";
 import { countItems } from "./utils";
+import { parseBetzaNotation } from "./betzaNotationParser";
 export { initialTsfen };
 
 export const piecesInitiallyOnBoard: Set<PieceSpecies> = new Set([...initialTsfen.matchAll(/[A-Z]+/g)].map(x => x[0] as PieceSpecies));
@@ -25,7 +26,7 @@ export const pieceRanks: Map<PieceSpecies, number> = new Map(Object.entries({
 	FID: 1,
 	FCR: 1
 }));
-export const pieceMovementBetzaNotations: Map<PieceSpecies, string> = new Map(pieces.map(piece => [piece.code, piece.movement]));
+export const pieceMovements: Map<PieceSpecies, PieceMovements> = new Map(pieces.map(piece => [piece.code, parseBetzaNotation(piece.movement)]));
 export const rangeCapturingPieces: Set<PieceSpecies> = new Set(["GG", "VG", "FLG", "AG", "FID", "FCR"]);
 
 function doesPiecePromote(piece: PieceEntry): piece is {

@@ -1,0 +1,7 @@
+.pieceInfoWrapper {
+	display: inline-block;
+}
+.searchResultInfo {
+	text-align: center;
+	font-style: italic;
+}

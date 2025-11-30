@@ -30,4 +30,9 @@ export default defineConfig({
 			}
 		}
 	],
+	server: {
+		hmr: {
+			timeout: 60000
+		}
+	}
 });

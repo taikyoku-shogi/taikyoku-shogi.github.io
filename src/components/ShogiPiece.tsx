@@ -40,7 +40,7 @@ export default function ShogiPiece({
 function getPieceKanji(piece: Piece) {
 	if(piece.owner == Player.Sente && piece.species == "K" && !piece.promoted) {
 		return "玉将";
-	} else if(piece.species == "GLG" && piece.promotedFrom == "P") {
+	} else if(piece.species == "GLG" && piece.promoted) {
 		return "と金";
 	} else {
 		return pieceKanjis.get(piece.species)!

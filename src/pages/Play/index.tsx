@@ -1,5 +1,5 @@
 import { useRef } from "preact/hooks";
-import ShogiBoard from "../../components/ShogiBoard";
+import ShogiGame from "../../components/ShogiGame";
 import Game from "../../lib/Game";
 import { initialTsfen } from "../../lib/pieceData";
 
@@ -7,7 +7,7 @@ export default function PlayPage() {
 	const board = useRef(new Game(initialTsfen));
 	
 	return (
-		<ShogiBoard
+		<ShogiGame
 			game={board.current}
 		/>
 	);

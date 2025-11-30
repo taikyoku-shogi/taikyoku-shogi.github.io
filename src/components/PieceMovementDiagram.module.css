@@ -14,7 +14,6 @@
 		width: var(--var-size);
 		height: var(--var-size);
 		text-align: center;
-		background: #F8F9FA;
 		
 		@media (prefers-color-scheme: dark) {
 			background: #4B5563;

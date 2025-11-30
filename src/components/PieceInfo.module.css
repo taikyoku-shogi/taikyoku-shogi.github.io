@@ -17,7 +17,7 @@
 	&:target {
 		outline: 5px solid gold;
 		@media (prefers-color-scheme: dark) {
-			outline-color: #526C7E;
+			outline-color: #738FA3;
 		}
 	}
 	

@@ -1,7 +1,8 @@
+import { PieceEntry } from "../types/pieces.csv";
 import { Move, PieceMovements, PieceSpecies, Player, Vec2 } from "../types/TaikyokuShogi";
-import { directions, parseBetzaNotation } from "./betzaNotationParser";
+import { directions } from "./betzaNotationParser";
 import Game from "./Game";
-import { pieceMovementBetzaNotations, piecePromotions, rangeCapturingPieces } from "./pieceData";
+import { pieceMovements, piecePromotions, piecesInitiallyOnBoard, rangeCapturingPieces } from "./pieceData";
 import * as vec2 from "./vec2";
 
 enum SquareStatus {
@@ -14,19 +15,20 @@ export default class Piece {
 	readonly species: PieceSpecies;
 	readonly promoted: boolean;
 	readonly owner: Player;
-	readonly promotedFrom: PieceSpecies | null;
 	
 	readonly #movements: PieceMovements;
 	
-	constructor(species: PieceSpecies, promoted: boolean, owner: Player, promotedFrom: PieceSpecies | null = null) {
+	constructor(species: PieceSpecies, promoted: boolean, owner: Player) {
 		this.species = species;
 		this.promoted = promoted;
 		this.owner = owner;
-		this.promotedFrom = promotedFrom;
 		
-		const betzaNotation = pieceMovementBetzaNotations.get(this.species)!;
-		this.#movements = parseBetzaNotation(betzaNotation);
+		this.#movements = pieceMovements.get(this.species)!;
 	}
+	static fromPieceEntry(pieceEntry: PieceEntry): Piece {
+		return new Piece(pieceEntry.code, !piecesInitiallyOnBoard.has(pieceEntry.code), Player.Sente);
+	}
+	
 	canPromote(): boolean {
 		return !this.promoted && piecePromotions.has(this.species);
 	}
@@ -38,7 +40,7 @@ export default class Piece {
 			throw new Error(`Cannot promote ${this.species}: Doesn't promote to anything`);
 		}
 		const promotedSpecies = piecePromotions.get(this.species)!;
-		return new Piece(promotedSpecies, true, this.owner, this.species);
+		return new Piece(promotedSpecies, true, this.owner);
 	}
 	#getAttackingSquares(pos: Vec2, game: Game): Vec2[] {
 		const targetLocations = new vec2.Set();

@@ -1,10 +1,9 @@
-import { MovementDir, directions, parseBetzaNotation } from "../lib/betzaNotationParser";
+import { MovementDir, directions } from "../lib/betzaNotationParser";
 import { abs, max } from "../lib/math";
 import Piece from "../lib/Piece";
-import { piecesInitiallyOnBoard } from "../lib/pieceData";
+import { pieceMovements, piecesInitiallyOnBoard } from "../lib/pieceData";
 import { range } from "../lib/utils";
-import { PieceEntry } from "../types/pieces.csv";
-import { PieceMovements, Player } from "../types/TaikyokuShogi";
+import { PieceMovements, PieceSpecies, Player } from "../types/TaikyokuShogi";
 
 import ShogiPiece from "./ShogiPiece";
 import styles from "./PieceMovementDiagram.module.css";
@@ -24,13 +23,11 @@ const forwardsDirs: Set<MovementDir> = new Set(["FL", "F", "FR"]);
 const backWardsDirs: Set<MovementDir> = new Set(["BL", "B", "BR"]);
 
 export default function PieceMovementDiagram({
-	pieceEntry
+	pieceSpecies
 }: {
-	pieceEntry: PieceEntry
+	pieceSpecies: PieceSpecies
 }) {
-	const piece = new Piece(pieceEntry.code, !piecesInitiallyOnBoard.has(pieceEntry.code), Player.Sente);
-	
-	const movements = useMemo(() => parseBetzaNotation(pieceEntry.movement), []);
+	const movements = pieceMovements.get(pieceSpecies)!;
 	
 	const maxHorizontalSlide = maxSlideInDir(movements, horizontalDirs);
 	const maxHorizontalJump = max(0, ...movements.jumps.map(([x]) => abs(x)));
@@ -69,6 +66,8 @@ export default function PieceMovementDiagram({
 	
 	const [tableRef, tableVisible] = useInView<HTMLTableElement>();
 	
+	const piece = new Piece(pieceSpecies, !piecesInitiallyOnBoard.has(pieceSpecies), Player.Sente);
+	
 	const tbody = useMemo(() => (
 		<tbody>
 			{range(-gridUpperY, -gridLowerY + 1).flatMap(row => (
@@ -96,7 +95,7 @@ export default function PieceMovementDiagram({
 				</tr>
 			))}
 		</tbody>
-	), [grid, gridLowerY, gridUpperY, horizontalGridSize, piece]);
+	), [grid, gridLowerY, gridUpperY, horizontalGridSize, pieceSpecies]);
 	
 	return (
 		<table
