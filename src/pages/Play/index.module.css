@@ -7,3 +7,24 @@
 		grid-template-rows: auto 1fr;
 	}
 }
+.sidebar {
+	margin: 10px;
+	padding: 10px 20px;
+	border: var(--card-border);
+	border-radius: 1em;
+	overflow: auto;
+	box-sizing: border-box;
+	@media (orientation: landscape) {
+		max-height: calc(100vh - var(--header-height) - 20px);
+		max-width: calc(100vw - min(100vw, calc(100vh - var(--header-height))) - 20px);
+	}
+	@media (orientation: portrait) {
+		max-width: calc(100vw - 20px);
+	}
+}
+.tsfenTextbox {
+	margin: auto;
+	display: block;
+	font-family: "Courier New", Courier, monospace;
+	resize: none;
+}

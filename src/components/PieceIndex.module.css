@@ -1,0 +1,10 @@
+.pieceNameList {
+	margin-top: 5px;
+	max-height: 40vh;
+	overflow-y: auto;
+}
+.searchResultInfo {
+	margin-bottom: 0;
+	text-align: center;
+	font-style: italic;
+}

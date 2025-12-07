@@ -1,10 +1,17 @@
 import { Tuple } from "../types/meta";
+import { MouseEventHandler, TargetedMouseEvent } from "preact";
 
+export async function sleep(millis: number) {
+	await new Promise(res => setTimeout(res, millis));
+}
 export function range(n: number, b?: number): number[] {
 	if(b === undefined) {
 		return Array.from({ length: n }, (_, i) => i);
 	}
 	return Array.from({ length: b - n }, (_, i) => i + n);
+}
+export function randomItem<T>(...items: T[]): T {
+	return items[~~(Math.random() * items.length)];
 }
 export function create2dArray<W extends number, H extends number, T>(w: W, h: H, value?: T): Tuple<Tuple<T, H>, W> {
 	return Array.from({ length: w }, () => Array.from({ length: h }, () => value)) as Tuple<Tuple<T, H>, W>;
@@ -22,6 +29,22 @@ export function assertFail(message: string) {
 }
 export function joinClasses(...classes: any[]): string {
 	return classes.filter(c => typeof c == "string").join(" ");
+}
+export function downloadFile(file: File) {
+	const a = document.createElement("a");
+	const url = URL.createObjectURL(file);
+	a.download = file.name;
+	a.href = url;
+	a.click();
+	URL.revokeObjectURL(url);
+}
+export function leftClickOnly(handler: MouseEventHandler<HTMLElement>) {
+	return (e: TargetedMouseEvent<HTMLElement>) => {
+		if(e.button) {
+			return;
+		}
+		handler(e);
+	};
 }
 export function isNumber(x: any): x is number {
 	try {
@@ -122,4 +145,23 @@ export class TwoWayNumericalMapping {
 		});
 	}
 	*/
+}
+
+import Swal, { SweetAlertOptions } from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+import buttonStyles from "../components/Button.module.css";
+const boundSwal = withReactContent(Swal);
+export function swal({
+	customClass,
+	...props
+}: SweetAlertOptions) {
+	return boundSwal.fire({
+		customClass: Object.assign({
+			confirmButton: buttonStyles.button,
+			denyButton: buttonStyles.button,
+			closeButton: buttonStyles.button,
+			cancelButton: buttonStyles.button
+		}, customClass),
+		...props
+	});
 }

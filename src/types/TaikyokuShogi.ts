@@ -7,10 +7,10 @@ export enum Player {
 	Sente,
 	Gote
 }
-export enum GameOutcome {
+export enum GameStatus {
+	Playing,
 	SenteWin,
-	GoteWin,
-	Draw
+	GoteWin
 }
 export type Vec2 = [number, number];
 export type BoardSquares = Tuple<Tuple<Piece | null, 36>, 36>;
@@ -19,12 +19,14 @@ export interface Move {
 	end: Vec2;
 	intermediateSteps?: Vec2[];
 }
-export interface CompoundPieceMovement extends Omit<PieceMovements, "compoundMoves"> {
-	canContinueAfterCapture: boolean;
+export interface CompoundPieceMovement extends PieceMovementsOnlySlidesJumps {
+	canContinueAfterCapture?: boolean;
 }
 export type MovementDir = "F" | "FR" | "R" | "BR" | "B" | "BL" | "L" | "FL";
 export interface PieceMovements {
 	slides: Partial<Record<MovementDir, number>>;
 	jumps: Vec2[];
-	compoundMoves: CompoundPieceMovement[];
+	tripleSlashedArrowDirs: MovementDir[];
+	compoundMoves: CompoundPieceMovement[][];
 }
+export type PieceMovementsOnlySlidesJumps = Omit<PieceMovements, "compoundMoves" | "tripleSlashedArrowDirs">;

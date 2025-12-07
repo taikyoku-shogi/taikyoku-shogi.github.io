@@ -24,3 +24,11 @@ export function useInView<T extends HTMLElement>(options?: IntersectionObserverI
 	
 	return [ref, visible];
 }
+export function useForceRerender() {
+	const [x, set] = useState(0);
+	return () => set(x + 1);
+}
+export function useToggle(initial: boolean = false) {
+	const [x, set] = useState(initial);
+	return [x, () => set(!x)] as const;
+}

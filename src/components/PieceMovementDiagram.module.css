@@ -1,5 +1,6 @@
 .table {
 	--var-size: 30px !important;
+	display: inline-table;
 	
 	&, tr, td {
 		border: 1px solid #A2A9B1;
@@ -26,5 +27,13 @@
 				background: var(--darkish);
 			}
 		}
+	}
+}
+.compoundMove {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	> span {
+		padding: 5px;
 	}
 }

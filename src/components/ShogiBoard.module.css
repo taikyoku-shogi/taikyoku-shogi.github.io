@@ -1,5 +1,19 @@
+.wrapper {
+	width: var(--width);
+	height: var(--width); /* aspect-ratio doesn't seem to work here */
+	--width: min(100vw, calc(100vh - var(--header-height)));
+	
+	/* Without this line, Firefox will sometimes think that it isn't scaled down and make the page scrollable (even though there is nothing there!) */
+	overflow: hidden;
+}
 .board {
-	width: min(100vw, calc(100vh - var(--header-height)));
+	/* Desktop browsers work poorly with non-integer lengths, so everything is actually a larger size then scaled down which fixes it. Mobile browsers don't seem to have this problem, probably because users are more likely to be zooming in to small things. */
+	--scale: 4;
+	--one-px: calc(var(--scale) * 1px);
+	--border-width: calc(0.75 * var(--one-px));
+	width: calc(var(--scale) * var(--width));
+	scale: calc(1 / var(--scale));
+	transform-origin: 0 0;
 	aspect-ratio: 1 / 1;
 	display: grid;
 	grid-template: repeat(36, 1fr) / repeat(36, 1fr);
@@ -7,8 +21,13 @@
 	background-image: url("../assets/board.jpg");
 	background-size: 40% 40%;
 	
+	transition: transform 0.3s;
+	&.flipped {
+		transform: rotate(180deg);
+	}
+	
 	> div {
-		--border: 1px solid black;
+		--border: var(--border-width) solid black;
 		
 		container-type: size;
 		box-sizing: border-box;
@@ -23,8 +42,14 @@
 			border-bottom: var(--border);
 		}
 		
+		&.lastMoveStart {
+			background-color: #FC08;
+		}
+		&.lastMoveEnd {
+			background-color: #F908;
+		}
 		&.moveTarget {
-			background-color: #c330f088;
+			background-color: #C330F088;
 			cursor: pointer;
 		}
 		

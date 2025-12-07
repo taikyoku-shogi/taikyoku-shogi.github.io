@@ -8,8 +8,8 @@
 		display: flex;
 	}
 	a {
-		color: black !important;
 		padding: 0.75rem;
+		color: black !important;
 		text-decoration: none;
 
 		&:hover {

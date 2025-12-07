@@ -19,14 +19,13 @@ export default function Kanji({
 }) {
 	kanji = kanji.replaceAll("𠵇", "⿰口奇"); // this character isn't supported in Noto Sans JP either :(
 	const chars = [...kanji]; // get full Unicode characters
-	if(chars.length <= 1) {
-		return kanji;
-	}
 	if(depth > 15) {
 		throw new Error(`Likely recursion when rendering <Kanji>${kanji}</Kanji>`);
 	}
 	let res: JSX.Element;
-	if(isIdsChar(chars[0])) {
+	if(chars.length <= 1) {
+		res = <>{kanji}</>;
+	} else if(isIdsChar(chars[0])) {
 		const nextKanjiI = getNextKanjiI(chars);
 		const idsClassName = idsToClassNames[chars[0]];
 		res = (
@@ -67,8 +66,8 @@ export default function Kanji({
 		);
 	}
 	
-	return !depth? (
-		<span className={styles.resetLineHeight}>
+	return depth == 0? (
+		<span className={styles.resetLineHeight} translate={false}>
 			{res}
 		</span>
 	) : res;

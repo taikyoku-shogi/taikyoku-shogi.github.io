@@ -29,7 +29,7 @@ FF,Free fire,奔火,sQvR5,-
 W,Whale,鯨鯢,vRbB,GWH
 GWH,Great whale,大鯨,BvR,-
 RR,Running rabbit,走兎,bKfQ,TF
-TF,Treacherous fox,隠狐,BAGvRvDvH(mAmG-B)(mvDmvH-R),MC
+TF,Treacherous fox,隠狐,BAGvRvDvH(AG-B)(vDvH-R),MC
 WT,White tiger,白虎,vR2sRflB,DTG
 DTG,Divine tiger,神虎,bR2fsRflB,-
 TS,Turtle-snake,玄武,KfrBblB,DT
@@ -79,7 +79,7 @@ FSG,Free stag,奔鹿,Q,-
 RW,Running wolf,走狼,fWfBsR,FW
 FW,Free wolf,奔狼,fBfsR,-
 AG,Angle general,角将,((cBcdB)-B),RAD
-RAD,Rain demon,霖鬼,fR3sR2bB2bR(fmB-B),-
+RAD,Rain demon,霖鬼,fR3sR2bB2bRfB(fA-B),-
 FLG,Flying general,飛将,((cRcdR)-R),FCR
 FCR,Flying crocodile,飛鰐,bB2fB3((cRcdR)-R),-
 RIT,Right tiger,右虎,FlQ,WT
@@ -120,8 +120,8 @@ SBO,Side boar,横猪,KsR,FBO
 FBO,Free boar,奔猪,WfsRfB,-
 SR,Silver rabbit,銀兎,fB2bB,W
 GOS,Gold stag,金鹿,fBbB2,WF
-L,Lion,獅子,KDAN(cK-bK),FFI
-FFI,Furious fiend,奮迅,Q3DAN(cK-bK),-
+L,Lion,獅子,(cK-aK),FFI
+FFI,Furious fiend,奮迅,Q3DAN(cK-aK),-
 FWC,Fowl cadet,禽曹,B3fsR3,FWO
 FID,Fierce dragon,猛龍,W2((cBcdB)-B),GDR
 WDM,Woodland demon,林鬼,sR2bB2vRfB,SP
@@ -151,13 +151,13 @@ RHS,Ram's-head soldier,羊兵,bWfB,TGS
 TGS,Tiger soldier,虎兵,bWfR2fB,-
 FIO,Fierce ox,猛牛,vWfB,FLO
 FLO,Flying ox,飛牛,BvR,FO
-AD,Ancient dragon,元龍,B(v(mppR3)-R),-
-GBI,Gold bird,金翅,bF3sW3vF(f(mpFF)3-FF),FBI
-FBI,Free bird,奔翅,RbB3(f(mpB)3-B),-
+AD,Ancient dragon,元龍,"B{F,B}>",-
+GBI,Gold bird,金翅,"bF3sbW3vR{FL,FR}>",FBI
+FBI,Free bird,奔翅,"RbB3{FL,FR}>",-
 DS,Dark spirit,無明,WfrFbF,BS
-BS,Buddhist spirit,法性,QDAN(cK-bK),-
+BS,Buddhist spirit,法性,QDAN(cK-aK),-
 DV,Deva,提婆,WflFbF,KT
-KT,King of teachings,教王,HG(H-R)(G-B),-
+KT,King of teachings,教王,"{F,FR,R,BR,B,BL,L,FL}>",-
 WC,Wood chariot,木車,flFbrFvR,WST
 WST,Wind snapping turtle,風鼈,fB2vR,-
 GF,Great foal,大駒,sR2vRfB,-
@@ -243,7 +243,7 @@ CS,Coiled serpent,蟠蛇,vWbF,CD
 CD,Coiled dragon,蟠龍,vRbB,-
 RD,Reclining dragon,臥龍,W,GDR
 FE,Free eagle,奔鷲,"QDAHGf(4,4)(cK-bK)(D-R)(A-B)(H-R)(G-B)(f(4,4)-B)",-
-LH,Lion hawk,獅鷹,WBDAN(cK-bK),-
+LH,Lion hawk,獅鷹,WBDAN(cK-aK),-
 CHS,Chariot soldier,車兵,sR2vQ,HTK
 HTK,Heavenly tetrarch king,四天王,QDA(D-R)(A-B),-
 VS,Vertical soldier,竪兵,bWsR2fR,CHS
@@ -285,7 +285,7 @@ CAG,Cannon general,炮将,bR2sR3fQ,-
 SWS,Sword soldier,刀兵,bWfF,SWG
 SWG,Sword general,刀将,bWfQ3,-
 GH,Great hawk,大鷹,QfD(fD-R),-
-GE,Great eagle,大鷲,Q(fA-B),-
+GE,Great eagle,大鷲,QfA(fA-B),-
 SPS,Spear soldier,鎗兵,WfR,SPG
 SPG,Spear general,鎗将,bR2sR3fR,-
 VL,Vertical leopard,竪豹,WfFfR,GL
@@ -295,7 +295,7 @@ GTG,Great tiger,大虎,WbsR,-
 CBS,Crossbow soldier,弓兵,fB3bWsR3fR5,CBG
 CBG,Crossbow general,弓将,bR2sR3fRfB5,-
 RDG,Roaring dog,吼犬,HfGRbB3fB,LD
-GEL,Great elephant,大象,fB3(pR-R)(b(mpB)3-B),-
+GEL,Great elephant,大象,"fB3{F,R,BR,B,BL,L}>",-
 D,Dog,犬,fWfF,MUG
 MUG,Multi general,雜将,vRfB,-
 GB,Go-between,仲人,vW,DE

@@ -1,5 +1,6 @@
 .stepMove, .rangeMove, .rangeCaptureMove, .jumpMove {
 	color: var(--light-mode-text-color);
+	text-align: center;
 }
 .stepMove {
 	background: #D0D0F0 !important;

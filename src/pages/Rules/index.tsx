@@ -4,9 +4,9 @@ const pieceEntries: PieceEntries = piecesCsv;
 
 import PieceInfo from "../../components/PieceInfo";
 import type { PieceEntries } from "../../types/pieces.csv";
-import { JumpMoveTd, RangeCaptureMoveTd, RangeMoveTd, StepMoveTd } from "../../components/pieceMovementSymbols";
+import { JumpMoveTd, RangeAfterJumpMoveTd, RangeCaptureMoveTd, RangeMoveTd, StepAfterJumpMoveTd, StepMoveTd, TripleSlashedArrowJumpMoveTd } from "../../components/pieceMovementSymbols";
 import SearchInput from "../../components/SearchInput";
-import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useCallback, useMemo, useRef, useState } from "preact/hooks";
 import { joinClasses } from "../../lib/utils";
 import styles from "./index.module.css";
 import { PieceSpecies } from "../../types/TaikyokuShogi";
@@ -62,6 +62,27 @@ export default function RulesPage() {
 						<tr>
 							<JumpMoveTd/>
 							<td>Jumps directly to this square.</td>
+						</tr>
+						<tr>
+							<StepAfterJumpMoveTd/>
+							<td>After making a jump marked by ☆, steps a limited number of squares along a straight line.</td>
+						</tr>
+						<tr>
+							<RangeAfterJumpMoveTd x={0} y={1}/>
+							<td rowSpan={4}>After making a jump marked by ☆, slides along a straight line.</td>
+						</tr>
+						<tr>
+							<RangeAfterJumpMoveTd x={1} y={0}/>
+						</tr>
+						<tr>
+							<RangeAfterJumpMoveTd x={1} y={-1}/>
+						</tr>
+						<tr>
+							<RangeAfterJumpMoveTd x={1} y={1}/>
+						</tr>
+						<tr>
+							<TripleSlashedArrowJumpMoveTd/>
+							<td>Slides along a straight line, then jumps up to three squares in the same direction, then continues sliding.<br/>Pieces may stop moving after the first slide or after the jump.</td>
 						</tr>
 						<tr>
 							<RangeCaptureMoveTd x={0} y={1}/>

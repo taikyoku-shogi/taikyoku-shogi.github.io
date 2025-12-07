@@ -3,14 +3,19 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "vite build",
-		"preview": "vite preview"
+		"preview": "vite preview",
+		"devbuild": "vite build --mode devbuild",
+		"bp": "npm run build && npm run preview",
+		"dbp": "npm run devbuild && npm run preview"
 	},
 	"dependencies": {
 		"@fontsource/catamaran": "^5.2.8",
 		"@fontsource/noto-sans-jp": "^5.2.8",
 		"preact": "^10.26.9",
 		"preact-iso": "^2.11.0",
-		"preact-render-to-string": "^6.6.3"
+		"preact-render-to-string": "^6.6.3",
+		"sweetalert2": "^11.26.3",
+		"sweetalert2-react-content": "^5.1.0"
 	},
 	"devDependencies": {
 		"@preact/preset-vite": "^2.10.2",

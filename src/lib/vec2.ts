@@ -9,6 +9,9 @@ export function sub(a: Vec2, b: Vec2): Vec2 {
 export function sign(v: Vec2): Vec2 {
 	return [Math.sign(v[0]), Math.sign(v[1])];
 }
+export function dotProduct(a: Vec2, b: Vec2): number {
+	return a[0] * b[0] + a[1] * b[1];
+}
 export function copy(v: Vec2): Vec2 {
 	return [v[0], v[1]];
 }

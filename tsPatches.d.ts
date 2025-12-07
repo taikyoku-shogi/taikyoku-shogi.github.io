@@ -13,4 +13,7 @@ declare global {
 		bind<This, NewThis>(this: This, thisArg: NewThis): This;
 		bind<This, NewThis, A extends any[]>(this: This, thisArg: NewThis, ...argArray: A): This extends (this: NewThis, ...args: [...A, ...infer B]) => infer C? (...args: B) => C : never;
 	}
+	interface String {
+		toLowerCase<T extends string>(this: T): Lowercase<T>;
+	}
 }

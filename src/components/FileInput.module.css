@@ -1,0 +1,9 @@
+.fileInput {
+	display: none;
+}
+.label {
+	margin: auto;
+	text-align: center;
+	display: block;
+	width: 50%;
+}

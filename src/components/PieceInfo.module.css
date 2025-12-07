@@ -2,7 +2,7 @@
 	margin: 0.8em;
 	padding: 1.25em;
 	display: inline-block;
-	outline: 3px solid #E6E99F;
+	outline: var(--card-border);
 	vertical-align: top;
 	text-align: left;
 	

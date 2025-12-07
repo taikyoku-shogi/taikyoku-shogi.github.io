@@ -4,6 +4,7 @@ import Kanji from "./Kanji";
 import styles from "./PieceInfo.module.css";
 import PieceMovementDiagram from "./PieceMovementDiagram";
 import { memo } from "preact/compat";
+import { leftClickOnly } from "../lib/utils";
 
 export default memo(function PieceInfo({
 	pieceSpecies,
@@ -21,7 +22,7 @@ export default memo(function PieceInfo({
 	}: {
 		piece: PieceSpecies
 	}) => (
-		<a href={`#${piece}`} onClick={onAnchorClick && (e => {
+		<a href={`#${piece}`} onMouseDown={onAnchorClick && leftClickOnly(e => {
 			onAnchorClick(piece);
 			e.preventDefault();
 		})}>

@@ -1,4 +1,4 @@
-import { Move, PieceSpecies, Player, Vec2 } from "../types/TaikyokuShogi";
+import { GameStatus, Move, PieceSpecies, Player, Vec2 } from "../types/TaikyokuShogi";
 import Piece from "./Piece";
 import { parseTsfen } from "./tsfen";
 import { TwoWayNumericalMapping } from "./utils";
@@ -9,6 +9,10 @@ export default class Game {
 	#moveCounter: number = 0;
 	get moveCounter() {
 		return this.#moveCounter;
+	}
+	#royalPiecesLeft: Vec2 = [0, 0];
+	get royalPiecesLeft() {
+		return this.#royalPiecesLeft;
 	}
 	
 	readonly #moveCache: Move[][] = Array(1296).fill(null).map(() => []);
@@ -24,10 +28,11 @@ export default class Game {
 			});
 			this.#moveCounter = moveCounter;
 		}
-		// this.shuffle(3805);
+		// this.shuffle(2005);
+		console.log(`${this.countAllMoves()} moves`);
 	}
 	getSquare(pos: Vec2): Piece | null {
-		return this.#squares[this.posToI(pos)] ?? null;
+		return this.#squares[Game.posToI(pos)] ?? null;
 	}
 	setSquare(pos: Vec2, piece: Piece | null) {
 		if(!vec2.isWithinBounds(pos, [0, 0], [36, 36])) {
@@ -36,7 +41,15 @@ export default class Game {
 		if(piece && this.getSquare(pos)) {
 			this.setSquare(pos, null); // not the best...
 		}
-		const posI = this.posToI(pos);
+		if(piece == null) {
+			const prevPiece = this.getSquare(pos);
+			if(prevPiece?.isRoyal) {
+				this.#royalPiecesLeft[prevPiece.owner]--;
+			}
+		} else if(piece.isRoyal) {
+			this.#royalPiecesLeft[piece.owner]++;
+		}
+		const posI = Game.posToI(pos);
 		this.#squares[posI] = piece;
 		
 		this.twoWayAttackMap.getBackwards(posI)?.forEach(attackingPos => {
@@ -92,7 +105,7 @@ export default class Game {
 		return this.getMovesAtSquareDisregardingCurrentPlayer(piecePos);
 	}
 	getMovesAtSquareDisregardingCurrentPlayer(piecePos: Vec2): Move[] {
-		const cacheKey = this.posToI(piecePos);
+		const cacheKey = Game.posToI(piecePos);
 		return this.#moveCache[cacheKey];
 	}
 	getCurrentPlayer(): Player {
@@ -110,6 +123,27 @@ export default class Game {
 		}
 		return count;
 	}
+	countAllMoves(): number {
+		let total = 0;
+		for(let i = 0; i < 1296; i++) {
+			total += this.#moveCache[i].length;
+		}
+		return total;
+	}
+	countMovesAt(pos: Vec2): number {
+		return this.#moveCache[Game.posToI(pos)].length;
+	}
+	getStatus(): GameStatus {
+		if(this.#royalPiecesLeft[Player.Sente] && this.#royalPiecesLeft[Player.Gote]) {
+			return GameStatus.Playing;
+		} else if(this.#royalPiecesLeft[Player.Sente] && !this.#royalPiecesLeft[Player.Gote]) {
+			return GameStatus.SenteWin;
+		} else if(this.#royalPiecesLeft[Player.Gote] && !this.#royalPiecesLeft[Player.Sente]) {
+			return GameStatus.GoteWin;
+		} else {
+			throw new Error("Invalid game: Both players have 0 royal pieces left!!");
+		}
+	}
 	shuffle(shuffles: number) {
 		for(let i = 0; i < shuffles; i++) {
 			const x1 = ~~(Math.random() * 36);
@@ -123,18 +157,18 @@ export default class Game {
 	}
 	
 	#generateMovesAndAttacks(posI: number) {
-		const pos = this.iToPos(posI);
+		const pos = Game.iToPos(posI);
 		const piece = this.getSquare(pos);
 		const [moves, attacks] = piece?.getMovesAndAttackingSquares(pos, this) ?? [[], []];
 		this.#moveCache[posI] = moves;
-		this.twoWayAttackMap.setForwards(posI, attacks.map(attack => this.posToI(attack)));
+		this.twoWayAttackMap.setForwards(posI, attacks.map(attack => Game.posToI(attack)));
 		// console.log(`calculating moves/attacks for ${piece?.species ?? "[empty]"} at`, pos, moves, attacks);
 	}
 	
-	posToI(pos: Vec2): number {
+	static posToI(pos: Vec2): number {
 		return pos[0] * 36 + pos[1];
 	}
-	iToPos(i: number): Vec2 {
+	static iToPos(i: number): Vec2 {
 		return [~~(i / 36), i % 36];
 	}
 }
