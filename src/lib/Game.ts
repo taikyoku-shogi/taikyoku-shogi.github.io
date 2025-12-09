@@ -29,6 +29,7 @@ export default class Game {
 			this.#moveCounter = moveCounter;
 		}
 		// this.shuffle(2005);
+		// this.removeRandom(500);
 		console.log(`${this.countAllMoves()} moves`);
 	}
 	getSquare(pos: Vec2): Piece | null {
@@ -58,6 +59,9 @@ export default class Game {
 		this.#generateMovesAndAttacks(posI);
 	}
 	makeMove(move: Move) {
+		if(this.getStatus() != GameStatus.Playing) {
+			throw new Error("Cannot make move: The game is over!");
+		}
 		const movingPiece = this.getSquare(move.start);
 		if(!movingPiece) {
 			throw new Error(`Cannot make move: No piece at ${vec2.stringify(move.start)}`);
@@ -67,8 +71,8 @@ export default class Game {
 		
 		if(movingPiece.canPromote()) {
 			const positionsToCheck = [move.end];
-			if(move.intermediateSteps) {
-				positionsToCheck.push(...move.intermediateSteps);
+			if(move.intermediateStep) {
+				positionsToCheck.push(move.intermediateStep);
 			}
 			if(positionsToCheck.some(pos => 
 				movingPiece.owner == Player.Gote && pos[1] > 24 || 
@@ -85,9 +89,9 @@ export default class Game {
 				this.setSquare(pos, null);
 			}
 		}
-		move.intermediateSteps?.forEach(pos => {
-			this.setSquare(pos, null);
-		});
+		if(move.intermediateStep) {
+			this.setSquare(move.intermediateStep, null);
+		}
 		this.#moveCounter++;
 	}
 	pieceCanMove(piecePos: Vec2): boolean {
@@ -105,6 +109,9 @@ export default class Game {
 		return this.getMovesAtSquareDisregardingCurrentPlayer(piecePos);
 	}
 	getMovesAtSquareDisregardingCurrentPlayer(piecePos: Vec2): Move[] {
+		if(this.getStatus() != GameStatus.Playing) {
+			return [];
+		}
 		const cacheKey = Game.posToI(piecePos);
 		return this.#moveCache[cacheKey];
 	}
@@ -153,6 +160,11 @@ export default class Game {
 			const t = this.getSquare([x1, y1]);
 			this.setSquare([x1, y1], this.getSquare([x2, y2]));
 			this.setSquare([x2, y2], t);
+		}
+	}
+	removeRandom(count: number) {
+		for(let i = 0; i < count; i++) {
+			this.setSquare([~~(Math.random() * 36), ~~(Math.random() * 36)], null);
 		}
 	}
 	

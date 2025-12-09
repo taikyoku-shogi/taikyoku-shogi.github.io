@@ -1,4 +1,4 @@
-import { Dispatch, useCallback, useRef, useState } from "preact/hooks";
+import { Dispatch, useCallback, useMemo, useRef, useState } from "preact/hooks";
 import Game from "../lib/Game";
 import { joinClasses, leftClickOnly, range } from "../lib/utils";
 import { GameStatus, Move, Player, Vec2 } from "../types/TaikyokuShogi";
@@ -7,6 +7,11 @@ import * as vec2 from "../lib/vec2";
 import BoardSquare from "./BoardSquare";
 import { useForceRerender } from "../lib/hooks";
 import Piece from "../lib/Piece";
+
+type MultiStepMove = {
+	currentPos: Vec2,
+	possibleMoves: Move[]
+};
 
 export default function ShogiBoard({
 	game,
@@ -33,8 +38,8 @@ export default function ShogiBoard({
 	
 	const forceRerender = useForceRerender();
 	const currentPlayer = game.getCurrentPlayer();
-	const [moveTargets, setMoveTargets] = useState<vec2.Set | null>(null);
 	const [moves, setMoves] = useState<Move[] | null>(null);
+	const [multiStepMove, setMultiStepMove] = useState<MultiStepMove | null>(null);
 	const [lastMove, setLastMove] = useState<Move | null>(null);
 	
 	const calculateBoardPos = useCallback(([x, y]: [number, number]): Vec2 => {
@@ -44,8 +49,8 @@ export default function ShogiBoard({
 	
 	const clearSelected = () => {
 		setSelectedSquare(null);
-		setMoveTargets(null);
 		setMoves(null);
+		setMultiStepMove(null);
 	};
 	const getMouseEventBoardCell = (e: MouseEvent) => {
 		if(!e.target || !(e.target instanceof Element)) {
@@ -65,66 +70,82 @@ export default function ShogiBoard({
 		if(!cell) {
 			return;
 		}
-		const [x, y] = getPosFromCell(cell);
+		const pos = getPosFromCell(cell);
 		if(destroyHax) {
-			game.setSquare([x, y], null);
+			game.setSquare(pos, null);
 			forceRerender();
 			return;
 		}
 		if(getCreativeHaxPiece) {
-			game.setSquare([x, y], getCreativeHaxPiece());
+			game.setSquare(pos, getCreativeHaxPiece());
 			forceRerender();
 			return;
 		}
 		if(cell.classList.contains(styles.moveTarget)) {
-			const validMoves = moves!.filter(move => vec2.equals(move.end, [x, y]))!;
-			console.log(moves, validMoves);
-			if(validMoves.length > 1) console.log(validMoves)
-			const move = validMoves[0];
-			game.makeMove(move);
-			setLastMove(move);
-			console.log(`${game.countAllMoves()} moves`);
-			if(game.getStatus() != GameStatus.Playing) {
-				console.log(`WIN FOR ${game.getStatus() == GameStatus.SenteWin? "SENTE" : "GOTE"}!!!!!`);
+			const validMoves = multiStepMove? multiStepMove.possibleMoves.filter(move => vec2.equals(move.end, pos)) : moves!.filter(move => vec2.equals(move.intermediateStep ?? move.end, pos));
+			if(validMoves.length > 1) {
+				setMultiStepMove({
+					currentPos: pos,
+					possibleMoves: validMoves
+				});
+				onMove?.();
+			} else {
+				const move = validMoves[0];
+				// console.log("making move", move)
+				game.makeMove(move);
+				setLastMove(move);
+				console.log(`${game.countAllMoves()} moves`);
+				if(game.getStatus() != GameStatus.Playing) {
+					console.log(`WIN FOR ${game.getStatus() == GameStatus.SenteWin? "SENTE" : "GOTE"}!!!!!`);
+				}
+				clearSelected();
+				if(!multiStepMove || !vec2.equals(multiStepMove.currentPos, move.end)) {
+					onMove?.();
+				}
 			}
-			clearSelected();
-			onMove?.();
 		} else if(!selectedSquare && cell.classList.contains(styles.canMove) && (contElRef.current!.classList.contains(styles.sente) == cell.classList.contains(styles.sente))) {
-			const boardPos = calculateBoardPos([x, y]);
+			const boardPos = calculateBoardPos(pos);
 			const moves = game.getMovesAtSquare(boardPos);
 			setMoves(moves);
-			setMoveTargets(new vec2.Set(moves.map(m => m.end)));
 			setSelectedSquare(boardPos);
 		} else {
 			clearSelected();
 		}
 	};
 	const handleHover = (e: MouseEvent) => {
+		if(getCreativeHaxPiece) {
+			return;
+		}
 		const cell = getMouseEventBoardCell(e);
 		if(!cell) {
 			return;
 		}
-		const [x, y] = getPosFromCell(cell);
+		const pos = getPosFromCell(cell);
 		if(debug) {
-			setSelectedSquare([x, y]);
+			setSelectedSquare(pos);
 			return;
 		}
-		const boardPos = calculateBoardPos([x, y]);
+		const boardPos = calculateBoardPos(pos);
 		const piece = game.getSquare(boardPos);
 		if(piece) {
 			onPieceHover?.(piece);
 		}
 	};
 	
+	const moveTargets = useMemo(() => multiStepMove? new vec2.Set(multiStepMove.possibleMoves.map(m => m.end)) : moves? new vec2.Set(moves.map(m => m.intermediateStep ?? m.end)) : null, [moves, multiStepMove]);
 	const selectedPieceCacheKey = selectedSquare? Game.posToI(selectedSquare) : -1;
+	const attackMap = game.twoWayAttackMap.getForwards(selectedPieceCacheKey);
+	const reverseAttackMap = game.twoWayAttackMap.getBackwards(selectedPieceCacheKey);
 	
 	return (
-		<div class={styles.wrapper}>
+		<div class={joinClasses(
+			styles.wrapper,
+			bottomPlayer == Player.Gote && styles.flipped
+		)}>
 			<div
 				ref={contElRef}
 				className={joinClasses(
 					styles.board,
-					bottomPlayer == Player.Gote && styles.flipped,
 					selectedSquare && styles.hasSelectedSquare,
 					currentPlayer == Player.Sente? styles.sente : styles.gote
 				)}
@@ -135,7 +156,7 @@ export default function ShogiBoard({
 					range(36).map(x => {
 						const pos: Vec2 = [x, y];
 						const boardPos: [number, number] = calculateBoardPos(pos);
-						let piece = game.getSquare(boardPos);
+						let piece = multiStepMove && vec2.equals(selectedSquare!, pos)? null : game.getSquare(multiStepMove && vec2.equals(multiStepMove.currentPos, pos)? selectedSquare! : boardPos);
 						// piece?.canPromote() && (piece=piece.promote())
 						
 						const isMoveTarget = moveTargets?.has(boardPos);
@@ -143,10 +164,10 @@ export default function ShogiBoard({
 						const isSelectedSquare = selectedSquare && vec2.equals(selectedSquare, boardPos);
 						
 						const boardI = Game.posToI(pos);
-						const inAttackMap = game.twoWayAttackMap.getForwards(selectedPieceCacheKey)?.has(boardI);
-						const inReverseAttackMap = game.twoWayAttackMap.getBackwards(selectedPieceCacheKey)?.has(boardI);
+						const inAttackMap = attackMap?.has(boardI);
+						const inReverseAttackMap = reverseAttackMap?.has(boardI);
 						
-						const wasLastMoveStart = lastMove && (vec2.equals(pos, lastMove.start) || lastMove.intermediateSteps?.some(stepPos => vec2.equals(stepPos, pos)));
+						const wasLastMoveStart = lastMove && (vec2.equals(pos, lastMove.start) || (lastMove.intermediateStep && vec2.equals(pos, lastMove.intermediateStep)));
 						const wasLastMoveEnd = lastMove && vec2.equals(pos, lastMove.end);
 						
 						return (

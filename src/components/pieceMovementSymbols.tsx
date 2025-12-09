@@ -8,6 +8,8 @@ export const JumpMoveTd = () => <td className={styles.jumpMove}>☆</td>;
 export const StepAfterJumpMoveTd = () => <td className={styles.jumpMove}>○</td>;
 export const RangeAfterJumpMoveTd = ({ x, y }: { x: number, y: number }) => <td className={styles.jumpMove}>{getLineCharForRangeMove(x, y)}</td>;
 export const TripleSlashedArrowJumpMoveTd = () => <td className={styles.jumpMove}>3</td>;
+export const IguiMoveTd = () => <td className={styles.iguiMove}>!</td>;
+export const StepAndCaptureMoveTd = () => <td className={styles.stepMove}>✖</td>;
 
 function getLineCharForRangeMove(x: number, y: number): string {
 	if(x && !y) return "─";

@@ -4,7 +4,7 @@ const pieceEntries: PieceEntries = piecesCsv;
 
 import PieceInfo from "../../components/PieceInfo";
 import type { PieceEntries } from "../../types/pieces.csv";
-import { JumpMoveTd, RangeAfterJumpMoveTd, RangeCaptureMoveTd, RangeMoveTd, StepAfterJumpMoveTd, StepMoveTd, TripleSlashedArrowJumpMoveTd } from "../../components/pieceMovementSymbols";
+import { IguiMoveTd, JumpMoveTd, RangeAfterJumpMoveTd, RangeCaptureMoveTd, RangeMoveTd, StepAfterJumpMoveTd, StepAndCaptureMoveTd, StepMoveTd, TripleSlashedArrowJumpMoveTd } from "../../components/pieceMovementSymbols";
 import SearchInput from "../../components/SearchInput";
 import { useCallback, useMemo, useRef, useState } from "preact/hooks";
 import { joinClasses } from "../../lib/utils";
@@ -83,6 +83,14 @@ export default function RulesPage() {
 						<tr>
 							<TripleSlashedArrowJumpMoveTd/>
 							<td>Slides along a straight line, then jumps up to three squares in the same direction, then continues sliding.<br/>Pieces may stop moving after the first slide or after the jump.</td>
+						</tr>
+						<tr>
+							<IguiMoveTd/>
+							<td>Can move to or capture this square then immediately return in a single move, effectively staying put.<br/>Capturing without moving is known as <i>igui</i> (居食い, stationary feeding).<br/>Moving to an empty square then immediately returning can be used to pass a turn, which is known as <i>jitto</i> (じっと).</td>
+						</tr>
+						<tr>
+							<StepAndCaptureMoveTd/>
+							<td>Steps to this square and can capture a piece here before continuing with the rest of the compound move.</td>
 						</tr>
 						<tr>
 							<RangeCaptureMoveTd x={0} y={1}/>

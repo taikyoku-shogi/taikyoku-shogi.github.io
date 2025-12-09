@@ -3,6 +3,7 @@ import { Move, PieceMovements, PieceMovementsOnlySlidesJumps, PieceSpecies, Play
 import { directions } from "./betzaNotationParser";
 import Game from "./Game";
 import { pieceMovements, piecePromotions, pieceRanks, piecesInitiallyOnBoard, rangeCapturingPieces, royalPieces } from "./pieceData";
+import { JSONSet } from "./utils";
 import * as vec2 from "./vec2";
 
 enum SquareStatus {
@@ -51,9 +52,10 @@ export default class Piece {
 	getMovesAndAttackingSquares(pos: Vec2, game: Game): [Move[], Vec2[]] {
 		return this.#getMovesAndAttackingSquaresFromMovements(pos, game, this.#movements);
 	}
-	#getMovesAndAttackingSquaresFromMovements(pos: Vec2, game: Game, movements: PieceMovements | PieceMovementsOnlySlidesJumps): [Move[], Vec2[]] {
+	#getMovesAndAttackingSquaresFromMovements(pos: Vec2, game: Game, movements: PieceMovements | PieceMovementsOnlySlidesJumps, definitelyEmptySquare: Vec2 = [NaN, NaN]): [Move[], Vec2[]] {
 		const attackingSquares = new vec2.Set();
 		const validMoveLocations = new vec2.Set();
+		const validMoveLocationsWithIntermediateStep = new JSONSet<{ end: Vec2, intermediateStep: Vec2 }>();
 		
 		Object.entries(movements.slides).forEach(([dir, range]) => {
 			const rawStep = directions[dir];
@@ -63,7 +65,7 @@ export default class Piece {
 				if(!vec2.isWithinBounds(target, [0, 0], [36, 36])) {
 					break;
 				}
-				const status = this.#getSquareStatus(game, target, this.isRangeCapturing && range == Infinity);
+				const status = vec2.equals(definitelyEmptySquare, target)? SquareStatus.Empty : this.#getSquareStatus(game, target, this.isRangeCapturing && range == Infinity);
 				attackingSquares.add(target);
 				if(status != SquareStatus.Blocked) {
 					validMoveLocations.add(target);
@@ -89,14 +91,18 @@ export default class Piece {
 					if(!mv1.canContinueAfterCapture && this.#getSquareStatus(game, move1.end) != SquareStatus.Empty) {
 						return;
 					}
-					const [moves, attacks] = this.#getMovesAndAttackingSquaresFromMovements(move1.end, game, mv2);
-					moves.forEach(move => validMoveLocations.add(move.end));
+					const [moves, attacks] = this.#getMovesAndAttackingSquaresFromMovements(move1.end, game, mv2, pos);
 					attacks.forEach(pos => attackingSquares.add(pos));
+					if(mv1.canContinueAfterCapture) {
+						moves.forEach(move => validMoveLocationsWithIntermediateStep.add({
+							end: move.end,
+							intermediateStep: move1.end
+						}));
+					} else {
+						moves.forEach(move => validMoveLocations.add(move.end));
+					}
 				});
 			});
-			if(this.species == "L") {
-				console.log(movements.compoundMoves, attackingSquares, validMoveLocations)
-			}
 		}
 		if("tripleSlashedArrowDirs" in movements) {
 			movements.tripleSlashedArrowDirs.forEach(dir => {
@@ -126,10 +132,13 @@ export default class Piece {
 			});
 		}
 		
-		const moves = validMoveLocations.values.map(end => ({
+		const moves = [...validMoveLocations.values.map(end => ({
 			start: pos,
 			end
-		}));
+		})), ...[...validMoveLocationsWithIntermediateStep].map(move => ({
+			start: pos,
+			...move
+		}))];
 		
 		return [moves, attackingSquares.values];
 	}

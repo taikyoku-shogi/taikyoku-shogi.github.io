@@ -17,7 +17,7 @@ export type BoardSquares = Tuple<Tuple<Piece | null, 36>, 36>;
 export interface Move {
 	start: Vec2;
 	end: Vec2;
-	intermediateSteps?: Vec2[];
+	intermediateStep?: Vec2;
 }
 export interface CompoundPieceMovement extends PieceMovementsOnlySlidesJumps {
 	canContinueAfterCapture?: boolean;
@@ -27,6 +27,6 @@ export interface PieceMovements {
 	slides: Partial<Record<MovementDir, number>>;
 	jumps: Vec2[];
 	tripleSlashedArrowDirs: MovementDir[];
-	compoundMoves: CompoundPieceMovement[][];
+	compoundMoves: [CompoundPieceMovement, CompoundPieceMovement][];
 }
 export type PieceMovementsOnlySlidesJumps = Omit<PieceMovements, "compoundMoves" | "tripleSlashedArrowDirs">;

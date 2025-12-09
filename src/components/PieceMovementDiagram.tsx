@@ -7,7 +7,7 @@ import { MovementDir, PieceMovements, PieceMovementsOnlySlidesJumps, PieceSpecie
 
 import ShogiPiece from "./ShogiPiece";
 import styles from "./PieceMovementDiagram.module.css";
-import { JumpMoveTd, RangeAfterJumpMoveTd, RangeCaptureMoveTd, RangeMoveTd, StepAfterJumpMoveTd, TripleSlashedArrowJumpMoveTd } from "./pieceMovementSymbols";
+import { IguiMoveTd, JumpMoveTd, RangeAfterJumpMoveTd, RangeCaptureMoveTd, RangeMoveTd, StepAfterJumpMoveTd, StepAndCaptureMoveTd, TripleSlashedArrowJumpMoveTd } from "./pieceMovementSymbols";
 import { StepMoveTd } from "./pieceMovementSymbols";
 import { useMemo } from "preact/hooks";
 import { useInView } from "../lib/hooks";
@@ -42,7 +42,27 @@ export default function PieceMovementDiagram({
 	];
 	if(movements.compoundMoves.length) {
 		const doubleRangeCompoundMoves = movements.compoundMoves.filter(([move1]) => Object.keys(move1.slides).length);
-		const compoundMoveTables = doubleRangeCompoundMoves.map(compound => (
+		
+		const iguiMoves = doubleRangeCompoundMoves.filter(([mv1, mv2]) => Object.entries(mv1.slides).every(([, range]) => range == 1) && Object.entries(mv2.slides).every(([mv2Dir, range]) => range == 1 && Object.keys(mv1.slides).some(mv1Dir => vec2.equals(directions[mv1Dir], vec2.neg(directions[mv2Dir])))));
+		if(iguiMoves.length) {
+			const iguiDirs = [...new Set(iguiMoves.flatMap(([mv1]) => Object.keys(mv1.slides)))];
+			const fakeIguiMovements: PieceMovementsOnlySlidesJumps = {
+				slides: Object.fromEntries(iguiDirs.map(dir => [dir, 1])),
+				jumps: []
+			};
+			console.log(fakeIguiMovements)
+			tables.push(
+				<PieceMovementTable
+					pieceSpecies={pieceSpecies}
+					movements={fakeIguiMovements}
+					isIgui
+				/>
+			);
+		}
+		
+		// this huge filter condition is very very slightly different from the one above; a .some is turned into a .every. This is so the igui shows when it can go back after the first move, but the normal compound move diagram shows when it can go in a different direction as well.
+		const normalDoubleRangeCompoundMoves = doubleRangeCompoundMoves.filter(([mv1, mv2]) => !(Object.entries(mv1.slides).every(([, range]) => range == 1) && Object.entries(mv2.slides).every(([mv2Dir, range]) => range == 1 && Object.keys(mv1.slides).every(mv1Dir => vec2.equals(directions[mv1Dir], vec2.neg(directions[mv2Dir]))))));
+		const compoundMoveTables = normalDoubleRangeCompoundMoves.map(compound => (
 			<div class={styles.compoundMove}>
 				<PieceMovementTable
 					pieceSpecies={pieceSpecies}
@@ -64,11 +84,13 @@ export default function PieceMovementDiagram({
 function PieceMovementTable({
 	pieceSpecies,
 	movements,
-	isCompoundMove = false
+	isCompoundMove = false,
+	isIgui = false
 }: {
 	pieceSpecies: PieceSpecies,
 	movements: PieceMovements | PieceMovementsOnlySlidesJumps,
-	isCompoundMove?: boolean
+	isCompoundMove?: boolean,
+	isIgui?: boolean
 }) {
 	const isRangeCapturingPiece = rangeCapturingPieces.has(pieceSpecies);
 	
@@ -158,6 +180,12 @@ function PieceMovementTable({
 									<ShogiPiece piece={piece}/>
 								</td>
 							);
+						} else if(move == null) {
+							return <td></td>;
+						} else if(isIgui) {
+							return <IguiMoveTd/>;
+						} else if("canContinueAfterCapture" in movements && movements.canContinueAfterCapture) {
+							return <StepAndCaptureMoveTd/>; // basically only used for lions
 						} else if(move === MovementType.Step) {
 							return <StepMoveTd/>;
 						} else if(move === MovementType.Range) {
@@ -173,7 +201,7 @@ function PieceMovementTable({
 						} else if(move === MovementType.TripleSlashedArrowJump) {
 							return <TripleSlashedArrowJumpMoveTd/>
 						} else {
-							return <td></td>;
+							throw new Error(`Unknown movement type for cell ${vec2.stringify([x, y])}: ${move}`);
 						}
 					})}
 				</tr>

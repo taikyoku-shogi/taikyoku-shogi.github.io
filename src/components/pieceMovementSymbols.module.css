@@ -1,6 +1,9 @@
-.stepMove, .rangeMove, .rangeCaptureMove, .jumpMove {
+.stepMove, .rangeMove, .rangeCaptureMove, .jumpMove, .iguiMove {
 	color: var(--light-mode-text-color);
 	text-align: center;
+	
+	padding-top: 0.1875em !important;
+	box-sizing: border-box;
 }
 .stepMove {
 	background: #D0D0F0 !important;
@@ -13,4 +16,9 @@
 }
 .jumpMove {
 	background: #F0F0B0 !important;
+}
+.iguiMove {
+	background: #D0F0D0 !important;
+	font-weight: bold;
+	font-size: 1.1em;
 }

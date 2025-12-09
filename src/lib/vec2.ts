@@ -6,6 +6,9 @@ export function add(a: Vec2, b: Vec2): Vec2 {
 export function sub(a: Vec2, b: Vec2): Vec2 {
 	return [a[0] - b[0], a[1] - b[1]];
 }
+export function neg(a: Vec2): Vec2 {
+	return [-a[0], -a[1]];
+}
 export function sign(v: Vec2): Vec2 {
 	return [Math.sign(v[0]), Math.sign(v[1])];
 }

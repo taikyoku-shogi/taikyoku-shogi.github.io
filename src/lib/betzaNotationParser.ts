@@ -80,7 +80,7 @@ export const parseBetzaNotation = ((betzaString: string, name?: string): PieceMo
 	
 	const slideMoves: PieceMovements["slides"] = {};
 	const jumpMoves: Vec2[] = [];
-	const unsimplifiedCompoundMoves: CompoundPieceMovement[][] = [];
+	const unsimplifiedCompoundMoves: [CompoundPieceMovement, CompoundPieceMovement][] = [];
 	
 	let modifiers = "";
 	for(let i = 0; i < betza.length; i++) {
@@ -98,23 +98,16 @@ export const parseBetzaNotation = ((betzaString: string, name?: string): PieceMo
 			}
 			const betzaInsideBracketsWithNewAtoms = betza.slice(bracketsStart, i);
 			const rawBetzaInsideBrackets = betzaInsideBracketsWithNewAtoms.map(char => typeof char == "symbol"? `(${newAtoms[char]})` : char).join("");
-			// if(hyphenI == -1) {
-			// 	console.error(`Couldn't find hyphen inside bracketed Betza expression: "${rawBetzaInsideBrackets}"`);
-			// }
-			// i++;
+			
 			if(hyphenI > -1) {
-				// console.log(`${name}: brackets from ${bracketsStart} to ${i}:`, rawBetzaInsideBrackets);
 				const [step1, step2] = rawBetzaInsideBrackets.split("-");
 				const canContinueAfterCapture = /^c[A-Z]/.test(step1);
 				const mv1 = parseBetzaNotation(step1);
 				const mv2IsPerpendicular = /^s[A-Z]/.test(step2);
 				const mv2IsAgain = /^a[A-Z]/.test(step2);
-				const mv2 = parseBetzaNotation(mv2IsPerpendicular? step2.slice(1) : step2);
+				const mv2IsBack = /^b[A-Z]/.test(step2);
+				const mv2 = parseBetzaNotation(mv2IsPerpendicular || mv2IsBack? step2.slice(1) : step2);
 				
-				// console.log(mv1, mv2)
-				// Object.entries(mv1.slides).forEach(([dir, range]) => {
-					
-				// });
 				mv1.jumps.forEach(jump => {
 					const jumpDir = vec2.sign(jump);
 					const mv2Slides: PieceMovements["slides"] = {};
@@ -141,7 +134,7 @@ export const parseBetzaNotation = ((betzaString: string, name?: string): PieceMo
 					const mv2Slides: PieceMovements["slides"] = {};
 					Object.entries(mv2.slides).forEach(([dirName, range]) => {
 						const dir = directions[dirName];
-						if(mv2IsAgain || (mv2IsPerpendicular? vec2.dotProduct(mv1Dir, dir) == 0 : vec2.equals(mv1Dir, dir))) {
+						if(mv2IsAgain || (mv2IsBack? vec2.equals(mv1Dir, vec2.neg(dir)) : mv2IsPerpendicular? vec2.dotProduct(mv1Dir, dir) == 0 : vec2.equals(mv1Dir, dir))) {
 							mv2Slides[dirName] = range;
 						}
 					});
@@ -249,7 +242,7 @@ export const parseBetzaNotation = ((betzaString: string, name?: string): PieceMo
 		}
 	}
 	
-	let compoundMoves: CompoundPieceMovement[][] = [];
+	let compoundMoves: [CompoundPieceMovement, CompoundPieceMovement][] = [];
 	unsimplifiedCompoundMoves.forEach(compound => {
 		const stringifiedMv2 = JSON.stringify(compound[1]);
 		const existingCompound = compoundMoves.find(([, mv2]) => JSON.stringify(mv2) == stringifiedMv2);
@@ -260,8 +253,7 @@ export const parseBetzaNotation = ((betzaString: string, name?: string): PieceMo
 			compoundMoves.push(compound);
 		}
 	});
-	// if(compoundMoves.length) console.log(`${name}:`, compoundMoves)
-	if(name == "Lion") {console.log(compoundMoves)}
+	
 	return {
 		slides: slideMoves,
 		jumps: jumpMoves,
@@ -286,6 +278,3 @@ function generateRotations(step: Vec2): Vec2[] {
 	];
 	return (new vec2.Set(allDirections)).values;
 }
-
-(globalThis as any).betza = parseBetzaNotation;
-console.clear()

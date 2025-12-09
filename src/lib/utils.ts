@@ -146,6 +146,50 @@ export class TwoWayNumericalMapping {
 	}
 	*/
 }
+export class JSONSet<T> {
+	#set = new Set<String>();
+	#indices = new Map<String, number>();
+	#actualValues: T[] = [];
+	constructor(values?: T[]) {
+		values?.forEach(value => this.add(value));
+	}
+	indexOf(value: T) {
+		return this.#indices.get(JSON.stringify(value));
+	}
+	add(value: T) {
+		let stringifiedValue = JSON.stringify(value);
+		if(!this.#indices.has(stringifiedValue)) {
+			this.#indices.set(stringifiedValue, this.size);
+			this.#actualValues.push(structuredClone(value));
+		}
+		return this.#set.add(stringifiedValue);
+	}
+	has(value: T) {
+		return this.#set.has(JSON.stringify(value));
+	}
+	clear() {
+		this.#indices.clear();
+		this.#actualValues = [];
+		this.#set.clear();
+	}
+	[Symbol.iterator]() {
+		return this.#actualValues.values();
+	}
+	*entries() {
+		for(let value of this.#actualValues) {
+			yield [value, value];
+		}
+	}
+	keys() {
+		return this[Symbol.iterator]();
+	}
+	values() {
+		return this[Symbol.iterator]();
+	}
+	get size() {
+		return this.#set.size;
+	}
+}
 
 import Swal, { SweetAlertOptions } from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";

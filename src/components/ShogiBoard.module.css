@@ -5,6 +5,11 @@
 	
 	/* Without this line, Firefox will sometimes think that it isn't scaled down and make the page scrollable (even though there is nothing there!) */
 	overflow: hidden;
+	
+	transition: transform 0.3s;
+	&.flipped {
+		transform: rotate(180deg);
+	}
 }
 .board {
 	/* Desktop browsers work poorly with non-integer lengths, so everything is actually a larger size then scaled down which fixes it. Mobile browsers don't seem to have this problem, probably because users are more likely to be zooming in to small things. */
@@ -21,9 +26,11 @@
 	background-image: url("../assets/board.jpg");
 	background-size: 40% 40%;
 	
-	transition: transform 0.3s;
-	&.flipped {
-		transform: rotate(180deg);
+	&.sente:not(.hasSelectedSquare) > div.sente.canMove,
+	&.gote:not(.hasSelectedSquare) > div.gote.canMove,
+	> div.selected {
+		background-color: #30A0F088;
+		cursor: pointer;
 	}
 	
 	> div {
@@ -63,13 +70,5 @@
 				background: linear-gradient(red 50%, green 50%);
 			}
 		}
-	}
-	
-	&.sente:not(.hasSelectedSquare) > div.sente.canMove,
-	&.gote:not(.hasSelectedSquare) > div.gote.canMove,
-	> div.selected {
-		
-		background-color: #30A0F088;
-		cursor: pointer;
 	}
 }
