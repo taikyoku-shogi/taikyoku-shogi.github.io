@@ -4,7 +4,7 @@ const pieceEntries: PieceEntries = piecesCsv;
 
 import PieceInfo from "../../components/PieceInfo";
 import type { PieceEntries } from "../../types/pieces.csv";
-import { IguiMoveTd, JumpMoveTd, RangeAfterJumpMoveTd, RangeCaptureMoveTd, RangeMoveTd, StepAfterJumpMoveTd, StepAndCaptureMoveTd, StepMoveTd, TripleSlashedArrowJumpMoveTd } from "../../components/pieceMovementSymbols";
+import { HookMoveTd, IguiMoveTd, JumpMoveTd, RangeAfterJumpMoveTd, RangeCaptureMoveTd, RangeMoveTd, StepAfterJumpMoveTd, StepAndCaptureMoveTd, StepMoveTd, TripleSlashedArrowJumpMoveTd } from "../../components/pieceMovementSymbols";
 import SearchInput from "../../components/SearchInput";
 import { useCallback, useMemo, useRef, useState } from "preact/hooks";
 import { joinClasses } from "../../lib/utils";
@@ -58,6 +58,13 @@ export default function RulesPage() {
 						</tr>
 						<tr>
 							<RangeMoveTd x={1} y={1}/>
+						</tr>
+						<tr>
+							<HookMoveTd x={1} y={0}/>
+							<td rowSpan={2}>Slides to this square, then continues sliding in a perpendicular direction.</td>
+						</tr>
+						<tr>
+							<HookMoveTd x={1} y={1}/>
 						</tr>
 						<tr>
 							<JumpMoveTd/>

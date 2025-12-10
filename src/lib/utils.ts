@@ -46,6 +46,10 @@ export function leftClickOnly(handler: MouseEventHandler<HTMLElement>) {
 		handler(e);
 	};
 }
+/** Does nothing (returns the input string); only helps with syntax highlighting. */
+export function css(strings: TemplateStringsArray, ...values: any[]) {
+	return strings.reduce((acc, str, i) => acc + str + (values[i] ?? ""), "");
+}
 export function isNumber(x: any): x is number {
 	try {
 		return parseInt(x) === +x;
@@ -65,6 +69,13 @@ export function countItems<T>(arr: T[]): Map<T, number> {
 		acc.set(item, (acc.get(item) ?? 0) + 1);
 		return acc;
 	}, new Map<T, number>());
+}
+export function conditionallyGroup<T>(arr: T[], f: (x: T) => boolean): [T[], T[]] {
+	const res: [T[], T[]] = [[], []];
+	arr.forEach(x => {
+		res[+f(x)].push(x);
+	});
+	return res;
 }
 export function cacheUnaryFunc<T extends string | number | boolean, R>(f: (x: T) => R): (x: T) => Readonly<R> {
 	const cache = new Map<T, R>();

@@ -1,4 +1,4 @@
-.stepMove, .rangeMove, .rangeCaptureMove, .jumpMove, .iguiMove {
+.stepMove, .rangeMove, .rangeCaptureMove, .jumpMove, .iguiMove, .hookMove {
 	color: var(--light-mode-text-color);
 	text-align: center;
 	

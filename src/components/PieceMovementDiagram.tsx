@@ -2,12 +2,12 @@ import { directions } from "../lib/betzaNotationParser";
 import { abs, max } from "../lib/math";
 import Piece from "../lib/Piece";
 import { pieceMovements, piecesInitiallyOnBoard, rangeCapturingPieces } from "../lib/pieceData";
-import { joinClasses, range } from "../lib/utils";
-import { MovementDir, PieceMovements, PieceMovementsOnlySlidesJumps, PieceSpecies, Player } from "../types/TaikyokuShogi";
+import { conditionallyGroup, joinClasses, range } from "../lib/utils";
+import { MovementDir, PieceMovements, PieceMovementsOnlySlidesJumps, PieceSpecies, Player, Vec2 } from "../types/TaikyokuShogi";
 
 import ShogiPiece from "./ShogiPiece";
 import styles from "./PieceMovementDiagram.module.css";
-import { IguiMoveTd, JumpMoveTd, RangeAfterJumpMoveTd, RangeCaptureMoveTd, RangeMoveTd, StepAfterJumpMoveTd, StepAndCaptureMoveTd, TripleSlashedArrowJumpMoveTd } from "./pieceMovementSymbols";
+import { HookMoveTd, IguiMoveTd, JumpMoveTd, RangeAfterJumpMoveTd, RangeCaptureMoveTd, RangeMoveTd, StepAfterJumpMoveTd, StepAndCaptureMoveTd, TripleSlashedArrowJumpMoveTd } from "./pieceMovementSymbols";
 import { StepMoveTd } from "./pieceMovementSymbols";
 import { useMemo } from "preact/hooks";
 import { useInView } from "../lib/hooks";
@@ -21,7 +21,8 @@ enum MovementType {
 	Jump,
 	StepAfterJump,
 	RangeAfterJump,
-	TripleSlashedArrowJump
+	TripleSlashedArrowJump,
+	HookMove
 }
 
 const horizontalDirs: Set<MovementDir> = new Set(["FR", "R", "BR", "BL", "L", "FL"]);
@@ -43,14 +44,13 @@ export default function PieceMovementDiagram({
 	if(movements.compoundMoves.length) {
 		const doubleRangeCompoundMoves = movements.compoundMoves.filter(([move1]) => Object.keys(move1.slides).length);
 		
-		const iguiMoves = doubleRangeCompoundMoves.filter(([mv1, mv2]) => Object.entries(mv1.slides).every(([, range]) => range == 1) && Object.entries(mv2.slides).every(([mv2Dir, range]) => range == 1 && Object.keys(mv1.slides).some(mv1Dir => vec2.equals(directions[mv1Dir], vec2.neg(directions[mv2Dir])))));
+		const iguiMoves = doubleRangeCompoundMoves.filter(([mv1, mv2]) => Object.values(mv1.slides).every(range => range == 1) && Object.entries(mv2.slides).every(([mv2Dir, range]) => range == 1 && Object.keys(mv1.slides).some(mv1Dir => vec2.equals(directions[mv1Dir], vec2.neg(directions[mv2Dir])))));
 		if(iguiMoves.length) {
 			const iguiDirs = [...new Set(iguiMoves.flatMap(([mv1]) => Object.keys(mv1.slides)))];
 			const fakeIguiMovements: PieceMovementsOnlySlidesJumps = {
 				slides: Object.fromEntries(iguiDirs.map(dir => [dir, 1])),
 				jumps: []
 			};
-			console.log(fakeIguiMovements)
 			tables.push(
 				<PieceMovementTable
 					pieceSpecies={pieceSpecies}
@@ -61,7 +61,9 @@ export default function PieceMovementDiagram({
 		}
 		
 		// this huge filter condition is very very slightly different from the one above; a .some is turned into a .every. This is so the igui shows when it can go back after the first move, but the normal compound move diagram shows when it can go in a different direction as well.
-		const normalDoubleRangeCompoundMoves = doubleRangeCompoundMoves.filter(([mv1, mv2]) => !(Object.entries(mv1.slides).every(([, range]) => range == 1) && Object.entries(mv2.slides).every(([mv2Dir, range]) => range == 1 && Object.keys(mv1.slides).every(mv1Dir => vec2.equals(directions[mv1Dir], vec2.neg(directions[mv2Dir]))))));
+		const nonIguiDoubleRangeCompoundMoves = doubleRangeCompoundMoves.filter(([mv1, mv2]) => !(Object.entries(mv1.slides).every(([, range]) => range == 1) && Object.entries(mv2.slides).every(([mv2Dir, range]) => range == 1 && Object.keys(mv1.slides).every(mv1Dir => vec2.equals(directions[mv1Dir], vec2.neg(directions[mv2Dir]))))));
+		const [normalDoubleRangeCompoundMoves, hookMoves] = conditionallyGroup(nonIguiDoubleRangeCompoundMoves, ([mv1, mv2]) => !mv1.jumps.length && !mv2.jumps.length && Object.entries(mv1.slides).every(([dir, range]) => range == Infinity && Object.keys(mv2.slides).every(mv2Dir => vec2.dotProduct(directions[dir], directions[mv2Dir]) == 0)) && Object.values(mv2.slides).every(range => range == Infinity));
+		
 		const compoundMoveTables = normalDoubleRangeCompoundMoves.map(compound => (
 			<div class={styles.compoundMove}>
 				<PieceMovementTable
@@ -77,7 +79,14 @@ export default function PieceMovementDiagram({
 				/>
 			</div>
 		));
-		tables.push(...compoundMoveTables);
+		const hookMoveTables = hookMoves.map(([mv1, mv2]) => (
+			<PieceMovementTable
+			pieceSpecies={pieceSpecies}
+			movements={mv1}
+			hookMoveSecondMove={mv2}
+			/>
+		));
+		tables.push(...compoundMoveTables, ...hookMoveTables);
 	}
 	return joinElements(tables, <div>or:</div>);
 }
@@ -85,26 +94,29 @@ function PieceMovementTable({
 	pieceSpecies,
 	movements,
 	isCompoundMove = false,
-	isIgui = false
+	isIgui = false,
+	hookMoveSecondMove
 }: {
 	pieceSpecies: PieceSpecies,
 	movements: PieceMovements | PieceMovementsOnlySlidesJumps,
 	isCompoundMove?: boolean,
-	isIgui?: boolean
+	isIgui?: boolean,
+	hookMoveSecondMove?: PieceMovementsOnlySlidesJumps
 }) {
 	const isRangeCapturingPiece = rangeCapturingPieces.has(pieceSpecies);
+	const isDiagonalHookMove = hookMoveSecondMove && Object.keys(hookMoveSecondMove.slides).every(dir => directions[dir][0] && directions[dir][1]);
 	
 	const maxHorizontalSlide = maxSlideInDir(movements, horizontalDirs);
 	const maxHorizontalJump = max(0, ...movements.jumps.map(([x]) => abs(x)));
-	const horizontalGridSize = max(1, maxHorizontalSlide, maxHorizontalJump) + 1;
+	const horizontalGridSize = max(isDiagonalHookMove? 2 : 1, maxHorizontalSlide, maxHorizontalJump) + 1;
 	
 	const maxForwardsSlide = maxSlideInDir(movements, forwardsDirs);
 	const maxForwardsJump = max(...movements.jumps.filter(([, y]) => y > 0).map(([, y]) => y));
-	const gridUpperY = max(1, maxForwardsSlide, maxForwardsJump) + 1;
+	const gridUpperY = max(isDiagonalHookMove? 2 : 1, maxForwardsSlide, maxForwardsJump) + 1;
 	
 	const maxBackwardsSlide = maxSlideInDir(movements, backwardsDirs);
 	const maxBackwardsJump = max(...movements.jumps.filter(([, y]) => y < 0).map(([, y]) => -y));
-	const gridLowerY = -max(1, maxBackwardsSlide, maxBackwardsJump) - 1;
+	const gridLowerY = -max(isDiagonalHookMove? 2 : 1, maxBackwardsSlide, maxBackwardsJump) - 1;
 	
 	const grid: Record<number, Record<number, MovementType | null>> = {};
 	for(let y = gridLowerY; y <= gridUpperY; y++) {
@@ -113,6 +125,7 @@ function PieceMovementTable({
 			grid[y][x] = null;
 		}
 	}
+	const hookMoveOffsets: Record<number, Record<number, Vec2 | null>> = {};
 	Object.entries(movements.slides).forEach(([dir, range]) => {
 		const step = directions[dir];
 		let [x, y] = step;
@@ -120,9 +133,25 @@ function PieceMovementTable({
 			if(grid[y]?.[x] === undefined) {
 				break;
 			}
-			grid[y][x] = range == Infinity? isRangeCapturingPiece? MovementType.RangeCapture : MovementType.Range : MovementType.Step;
+			grid[y][x] = hookMoveSecondMove? MovementType.HookMove : range == Infinity? isRangeCapturingPiece? MovementType.RangeCapture : MovementType.Range : MovementType.Step;
+			if(hookMoveSecondMove) {
+				Object.entries(hookMoveSecondMove.slides).forEach(([mv2Dir, mv2Range]) => {
+					const mv2Step = directions[mv2Dir];
+					let [x2, y2] = vec2.add([x, y], mv2Step);
+					for(let j = 1; j <= mv2Range; j++) {
+						if(grid[y2]?.[x2] === undefined) {
+							break;
+						}
+						grid[y2][x2] = MovementType.Range;
+						hookMoveOffsets[y2] ??= {};
+						hookMoveOffsets[y2][x2] = vec2.sub([x2, y2], [x, y]);
+						x2 += mv2Step[0];
+						y2 += mv2Step[1];
+					}
+				});
+			}
 			x += step[0];
-			y += step[1]
+			y += step[1];
 		}
 	});
 	movements.jumps.forEach(([x, y]) => {
@@ -189,7 +218,7 @@ function PieceMovementTable({
 						} else if(move === MovementType.Step) {
 							return <StepMoveTd/>;
 						} else if(move === MovementType.Range) {
-							return <RangeMoveTd x={x} y={y}/>;
+							return <RangeMoveTd x={hookMoveOffsets[y]?.[x]?.[0] ?? x} y={hookMoveOffsets[y]?.[x]?.[1] ?? y}/>;
 						} else if(move === MovementType.RangeCapture) {
 							return <RangeCaptureMoveTd x={x} y={y}/>;
 						} else if(move === MovementType.Jump) {
@@ -200,6 +229,8 @@ function PieceMovementTable({
 							return <RangeAfterJumpMoveTd x={x} y={y}/>;
 						} else if(move === MovementType.TripleSlashedArrowJump) {
 							return <TripleSlashedArrowJumpMoveTd/>
+						} else if(move === MovementType.HookMove) {
+							return <HookMoveTd x={x} y={y}/>;
 						} else {
 							throw new Error(`Unknown movement type for cell ${vec2.stringify([x, y])}: ${move}`);
 						}

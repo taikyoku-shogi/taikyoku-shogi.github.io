@@ -6,14 +6,15 @@ import { Player } from "../types/TaikyokuShogi";
 import styles from "./ShogiPiece.module.css";
 import Kanji from "./Kanji";
 import { kanjiStringLength } from "../lib/kanjiIds";
+import { forwardRef } from "preact/compat";
 
-export default function ShogiPiece({
+export default forwardRef<HTMLSpanElement, {
+	piece: Piece,
+} & HTMLAttributes<HTMLSpanElement>>(function ShogiPiece({
 	piece,
 	className = "",
 	...props
-}: {
-	piece: Piece,
-} & HTMLAttributes<HTMLSpanElement>) {
+}, ref) {
 	const kanji = getPieceKanji(piece);
 	const kanjiLength = kanjiStringLength(kanji);
 	return (
@@ -28,12 +29,13 @@ export default function ShogiPiece({
 				piece.owner == Player.Sente? styles.sente : styles.gote,
 				className
 			)}
+			ref={ref}
 			{...props}
 		>
 			<Kanji vertical>{kanji}</Kanji>
 		</span>
 	)
-}
+});
 
 function getPieceKanji(piece: Piece) {
 	if(piece.owner == Player.Sente && piece.species == "K" && !piece.promoted) {

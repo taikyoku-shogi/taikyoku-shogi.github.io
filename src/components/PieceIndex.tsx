@@ -11,7 +11,7 @@ import { PieceEntries } from "../types/pieces.csv";
 import Kanji from "./Kanji";
 import styles from "./PieceIndex.module.css";
 import Button from "./Button";
-import { joinClasses } from "../lib/utils";
+import { css, joinClasses } from "../lib/utils";
 import { useToggle } from "../lib/hooks";
 
 export type PieceIndexHandle = {
@@ -94,7 +94,7 @@ export default forwardRef<PieceIndexHandle>(function PieceIndex(_, ref) {
 					</Button>
 				))}
 			</div>
-			{outlineCurrentPiece && <style>{`
+			{outlineCurrentPiece && <style>{css`
 				.${currentPiece} {
 					outline: calc(4 * var(--border-width)) solid red;
 					outline-offset: calc(var(--border-width) * -1);

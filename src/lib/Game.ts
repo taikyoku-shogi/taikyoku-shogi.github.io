@@ -29,7 +29,7 @@ export default class Game {
 			this.#moveCounter = moveCounter;
 		}
 		// this.shuffle(2005);
-		// this.removeRandom(500);
+		// this.removeRandom(1000);
 		console.log(`${this.countAllMoves()} moves`);
 	}
 	getSquare(pos: Vec2): Piece | null {
@@ -164,7 +164,12 @@ export default class Game {
 	}
 	removeRandom(count: number) {
 		for(let i = 0; i < count; i++) {
-			this.setSquare([~~(Math.random() * 36), ~~(Math.random() * 36)], null);
+			const x = ~~(Math.random() * 36);
+			const y = ~~(Math.random() * 36);
+			if(this.getSquare([x, y])?.isRoyal) {
+				continue;
+			}
+			this.setSquare([x, y], null);
 		}
 	}
 	

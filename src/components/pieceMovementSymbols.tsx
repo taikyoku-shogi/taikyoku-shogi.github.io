@@ -10,10 +10,15 @@ export const RangeAfterJumpMoveTd = ({ x, y }: { x: number, y: number }) => <td 
 export const TripleSlashedArrowJumpMoveTd = () => <td className={styles.jumpMove}>3</td>;
 export const IguiMoveTd = () => <td className={styles.iguiMove}>!</td>;
 export const StepAndCaptureMoveTd = () => <td className={styles.stepMove}>✖</td>;
+export const HookMoveTd = ({ x, y }: { x: number, y: number }) => <td className={styles.rangeMove}>{getCrossCharForHookMove(x, y)}</td>;
 
 function getLineCharForRangeMove(x: number, y: number): string {
 	if(x && !y) return "─";
 	if(y && !x) return "│";
 	if(sign(x) == sign(y)) return "╱";
 	return "╲";
+}
+function getCrossCharForHookMove(x: number, y: number): string {
+	if(!x || !y) return "┼";
+	return "╳";
 }

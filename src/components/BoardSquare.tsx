@@ -2,26 +2,21 @@ import { memo } from "preact/compat";
 
 import ShogiPiece from "./ShogiPiece";
 import Piece from "../lib/Piece";
+import { HTMLAttributes } from "preact";
 
 export default memo(function BoardSquare({
-	x,
-	y,
 	piece,
-	className
+	pieceClassName,
+	...props
 }: {
-	x: number,
-	y: number,
 	piece: Piece | null,
-	className: string
-}) {
+	pieceClassName?: string | undefined,
+} & HTMLAttributes<HTMLDivElement>) {
 	return (
-		<div
-			className={className}
-			data-x={x}
-			data-y={y}
-		>
+		<div {...props}>
 			{piece && <ShogiPiece
 				piece={piece}
+				className={pieceClassName}
 			/>}
 		</div>
 	);

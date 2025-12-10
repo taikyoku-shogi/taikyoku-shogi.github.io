@@ -54,6 +54,7 @@
 		}
 		&.lastMoveEnd {
 			background-color: #F908;
+			overflow: visible;
 		}
 		&.moveTarget {
 			background-color: #C330F088;
@@ -70,5 +71,14 @@
 				background: linear-gradient(red 50%, green 50%);
 			}
 		}
+	}
+}
+.moveAnim {
+	z-index: 1;
+	animation: moveIntoPlace var(--anim-duration) cubic-bezier(0.25, 0.1, 0.75, 1);
+}
+@keyframes moveIntoPlace {
+	from {
+		transform: translate(var(--anim-offset-x), var(--anim-offset-y));
 	}
 }

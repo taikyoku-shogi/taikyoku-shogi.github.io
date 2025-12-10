@@ -23,7 +23,7 @@ export default function Kanji({
 		throw new Error(`Likely recursion when rendering <Kanji>${kanji}</Kanji>`);
 	}
 	let res: JSX.Element;
-	if(chars.length <= 1) {
+	if(chars.length <= 1 || chars.every(char => !(char in idsToClassNames))) {
 		res = <>{kanji}</>;
 	} else if(isIdsChar(chars[0])) {
 		const nextKanjiI = getNextKanjiI(chars);

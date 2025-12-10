@@ -1,12 +1,13 @@
-import { Dispatch, useCallback, useMemo, useRef, useState } from "preact/hooks";
+import { Dispatch, useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import Game from "../lib/Game";
-import { joinClasses, leftClickOnly, range } from "../lib/utils";
+import { css, joinClasses, leftClickOnly, range } from "../lib/utils";
 import { GameStatus, Move, Player, Vec2 } from "../types/TaikyokuShogi";
 import styles from "./ShogiBoard.module.css";
 import * as vec2 from "../lib/vec2";
 import BoardSquare from "./BoardSquare";
 import { useForceRerender } from "../lib/hooks";
 import Piece from "../lib/Piece";
+import { hypot, sqrt } from "../lib/math";
 
 type MultiStepMove = {
 	currentPos: Vec2,
@@ -41,6 +42,7 @@ export default function ShogiBoard({
 	const [moves, setMoves] = useState<Move[] | null>(null);
 	const [multiStepMove, setMultiStepMove] = useState<MultiStepMove | null>(null);
 	const [lastMove, setLastMove] = useState<Move | null>(null);
+	const [lastMoveTime, setLastMoveTime] = useState(0);
 	
 	const calculateBoardPos = useCallback(([x, y]: [number, number]): Vec2 => {
 		// return bottomPlayer == Player.Sente? [x, y] : [35 - x, 35 - y];
@@ -94,6 +96,7 @@ export default function ShogiBoard({
 				// console.log("making move", move)
 				game.makeMove(move);
 				setLastMove(move);
+				setLastMoveTime(Date.now());
 				console.log(`${game.countAllMoves()} moves`);
 				if(game.getStatus() != GameStatus.Playing) {
 					console.log(`WIN FOR ${game.getStatus() == GameStatus.SenteWin? "SENTE" : "GOTE"}!!!!!`);
@@ -137,6 +140,9 @@ export default function ShogiBoard({
 	const attackMap = game.twoWayAttackMap.getForwards(selectedPieceCacheKey);
 	const reverseAttackMap = game.twoWayAttackMap.getBackwards(selectedPieceCacheKey);
 	
+	const moveAnimOffset = lastMove? vec2.sub(lastMove.start, lastMove.end) : [0, 0];
+	const moveAnimDuration = sqrt(hypot(...moveAnimOffset)) / 12;
+	
 	return (
 		<div class={joinClasses(
 			styles.wrapper,
@@ -151,6 +157,11 @@ export default function ShogiBoard({
 				)}
 				onMouseDown={leftClickOnly(handleClick)}
 				onMouseMove={handleHover}
+				style={`
+					--anim-offset-x: ${moveAnimOffset[0] * 100}%;
+					--anim-offset-y: ${moveAnimOffset[1] * 100}%;
+					--anim-duration: ${moveAnimDuration}s;
+				`}
 			>
 				{range(36).flatMap(y => (
 					range(36).map(x => {
@@ -172,8 +183,9 @@ export default function ShogiBoard({
 						
 						return (
 							<BoardSquare
-								x={x}
-								y={y}
+								key={wasLastMoveEnd? `anim-${lastMoveTime}` : `static-${x}-${y}`} // This is needed so if a piece which just moved is captured, Preact doesn't optimise it away and will fully replace this element, ensuring the move animation plays.
+								data-x={x}
+								data-y={y}
 								piece={piece}
 								className={joinClasses(
 									piece && piece.species,
@@ -186,6 +198,7 @@ export default function ShogiBoard({
 									debug && inAttackMap && styles.inAttackMap,
 									debug && inReverseAttackMap && styles.inReverseAttackMap
 								)}
+								pieceClassName={wasLastMoveEnd? styles.moveAnim : undefined}
 							/>
 						);
 					})
