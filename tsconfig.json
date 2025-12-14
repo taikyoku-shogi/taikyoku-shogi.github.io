@@ -16,5 +16,8 @@
 			"react-dom": ["./node_modules/preact/compat/"]
 		}
 	},
+	"mdx": {
+		"checkMdx": true
+	},
 	"include": ["node_modules/vite/client.d.ts", "**/*"]
 }

@@ -1,6 +1,6 @@
-import { Dispatch, useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { Dispatch, useCallback, useMemo, useRef, useState } from "preact/hooks";
 import Game from "../lib/Game";
-import { css, joinClasses, leftClickOnly, range } from "../lib/utils";
+import { joinClasses, leftClickOnly, range } from "../lib/utils";
 import { GameStatus, Move, Player, Vec2 } from "../types/TaikyokuShogi";
 import styles from "./ShogiBoard.module.css";
 import * as vec2 from "../lib/vec2";
@@ -49,7 +49,7 @@ export default function ShogiBoard({
 		return [x,y];
 	}, [bottomPlayer]);
 	
-	const clearSelected = () => {
+	const clearSelectedSquare = () => {
 		setSelectedSquare(null);
 		setMoves(null);
 		setMultiStepMove(null);
@@ -101,7 +101,7 @@ export default function ShogiBoard({
 				if(game.getStatus() != GameStatus.Playing) {
 					console.log(`WIN FOR ${game.getStatus() == GameStatus.SenteWin? "SENTE" : "GOTE"}!!!!!`);
 				}
-				clearSelected();
+				clearSelectedSquare();
 				if(!multiStepMove || !vec2.equals(multiStepMove.currentPos, move.end)) {
 					onMove?.();
 				}
@@ -112,7 +112,7 @@ export default function ShogiBoard({
 			setMoves(moves);
 			setSelectedSquare(boardPos);
 		} else {
-			clearSelected();
+			clearSelectedSquare();
 		}
 	};
 	const handleHover = (e: MouseEvent) => {

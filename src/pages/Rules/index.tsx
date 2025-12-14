@@ -89,7 +89,7 @@ export default function RulesPage() {
 						</tr>
 						<tr>
 							<TripleSlashedArrowJumpMoveTd/>
-							<td>Slides along a straight line, then jumps up to three squares in the same direction, then continues sliding.<br/>Pieces may stop moving after the first slide or after the jump.</td>
+							<td>Slides along a straight line, jumping over up to three pieces in the way.</td>
 						</tr>
 						<tr>
 							<IguiMoveTd/>

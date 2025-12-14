@@ -19,7 +19,7 @@
 	color: var(--color);
 	background-color: white;
 	
-	scrollbar-width: thin;
+	/* scrollbar-width: thin; */
 	scroll-behavior: smooth;
 	
 	text-rendering: optimizeLegibility;
@@ -58,6 +58,15 @@ a {
 	&:visited {
 		color: #3A5CCC;
 	}
+}
+code {
+	font-family: "JetBrains Mono", monospace;
+	border-radius: 6px;
+	padding: 3px 6px;
+	background: rgba(142, 150, 170, 0.14);
+	color: var(--blue);
+	overflow-wrap: break-word;
+	white-space: pre-wrap;
 }
 main > section {
 	margin: 2em;

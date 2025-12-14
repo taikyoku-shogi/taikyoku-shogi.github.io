@@ -74,10 +74,7 @@ export default class Game {
 			if(move.intermediateStep) {
 				positionsToCheck.push(move.intermediateStep);
 			}
-			if(positionsToCheck.some(pos => 
-				movingPiece.owner == Player.Gote && pos[1] > 24 || 
-				movingPiece.owner == Player.Sente && pos[1] < 11
-			)) {
+			if(positionsToCheck.some(pos => Game.isPosInPromotionZone(pos, movingPiece.owner))) {
 				const promotedPiece = movingPiece.promote();
 				this.setSquare(move.end, promotedPiece);
 			}
@@ -187,5 +184,11 @@ export default class Game {
 	}
 	static iToPos(i: number): Vec2 {
 		return [~~(i / 36), i % 36];
+	}
+	static isPosInPromotionZone(pos: Vec2, owner: Player): boolean {
+		if(owner == Player.Sente) {
+			return pos[1] < 11;
+		}
+		return pos[1] > 24;
 	}
 }

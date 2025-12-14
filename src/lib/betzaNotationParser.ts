@@ -40,6 +40,8 @@ export const parseBetzaNotation = ((betzaString: string, name?: string): PieceMo
 	betzaString = betzaString.replaceAll(/\{(F|FR|R|BR|B|BL|L|FL)((?:,(?:F|FR|R|BR|B|BL|L|FL))*)\}>/g, (_, firstDir, restOfTheDirs) => {
 		const dirs: MovementDir[] = [firstDir, ...restOfTheDirs.split(",").slice(1)];
 		tripleSlashedArrowDirs.push(...dirs);
+		return "";
+		/*
 		return dirs.map(dir => ({
 			F: "fR",
 			FR: "frB",
@@ -50,6 +52,7 @@ export const parseBetzaNotation = ((betzaString: string, name?: string): PieceMo
 			L: "lR",
 			FL: "flB"
 		}[dir])).join("");
+		*/
 	});
 	// these are for range capturing pieces (the actual range capturing move generation and logic is handled elsewhere)
 	betzaString = betzaString.replaceAll(/\(\(c([A-Z])cd\1\)-\1\)/g, "$1");

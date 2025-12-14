@@ -1,5 +1,5 @@
 import Game from "../../lib/Game";
-import { useMemo, useRef, useState } from "preact/hooks";
+import { useRef, useState } from "preact/hooks";
 import { initialTsfen } from "../../lib/pieceData";
 import { GameStatus, PieceSpecies, Player, Vec2 } from "../../types/TaikyokuShogi";
 import ShogiBoard from "../../components/ShogiBoard";

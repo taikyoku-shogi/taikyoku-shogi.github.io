@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import preact from "@preact/preset-vite";
 import dsv from "@rollup/plugin-dsv";
+import mdx from "@mdx-js/rollup";
 import pc from "picocolors";
 import path from "node:path";
 import * as fs from "node:fs";
@@ -17,6 +18,7 @@ export default defineConfig({
 			}
 		}),
 		dsv(),
+		mdx(),
 		{
 			name: "copy-404-for-github-pages",
 			closeBundle() {

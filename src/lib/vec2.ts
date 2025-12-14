@@ -31,13 +31,18 @@ export function isWithinBounds([x, y]: Vec2, [minX, minY]: Vec2, [maxX, maxY]: V
 export class Set {
 	#values: [number, number][] = [];
 	#val0s: Map<number, Map<number, number>> = new Map();
-	constructor(values: Iterable<[number, number]> = []) {
+	#bounds?: [Vec2, Vec2];
+	constructor(values: Iterable<[number, number]> = [], { bounds }: { bounds?: [Vec2, Vec2] } = {}) {
 		[...values].forEach(value => this.add(value));
+		this.#bounds = bounds;
 	}
 	/**
 	 * Adds a value and returns the index of it in the set.
 	 */
 	add(value: [number, number]): number {
+		if(this.#bounds && !isWithinBounds(value, this.#bounds[0], this.#bounds[1])) {
+			return;
+		}
 		let val1s = this.#val0s.get(value[0]);
 		if(!val1s) {
 			val1s = new Map();

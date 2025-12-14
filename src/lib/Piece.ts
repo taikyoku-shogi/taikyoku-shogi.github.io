@@ -53,7 +53,9 @@ export default class Piece {
 		return this.#getMovesAndAttackingSquaresFromMovements(pos, game, this.#movements);
 	}
 	#getMovesAndAttackingSquaresFromMovements(pos: Vec2, game: Game, movements: PieceMovements | PieceMovementsOnlySlidesJumps, definitelyEmptySquare: Vec2 = [NaN, NaN]): [Move[], Vec2[]] {
-		const attackingSquares = new vec2.Set();
+		const attackingSquares = new vec2.Set([], {
+			bounds: [[0, 0], [36, 36]]
+		});
 		const validMoveLocations = new vec2.Set();
 		const validMoveLocationsWithIntermediateStep = new JSONSet<{ end: Vec2, intermediateStep: Vec2 }>();
 		
@@ -99,7 +101,15 @@ export default class Piece {
 							intermediateStep: move1.end
 						}));
 					} else {
-						moves.forEach(move => validMoveLocations.add(move.end));
+						moves.forEach(move => {
+							if(move.intermediateStep && Game.isPosInPromotionZone(move.intermediateStep, this.owner)) {
+								validMoveLocationsWithIntermediateStep.add({
+									end: move.end,
+									intermediateStep: move1.end
+								});
+							}
+							validMoveLocations.add(move.end);
+						});
 					}
 				});
 			});
@@ -108,25 +118,18 @@ export default class Piece {
 			movements.tripleSlashedArrowDirs.forEach(dir => {
 				const rawStep = directions[dir];
 				const step = this.#movementDirToBoardDir(rawStep);
-				let hasJumped = false;
-				let jumpStart = -Infinity;
+				let jumpedOverPiecesCount = 0;
 				for(let i = 0, target = vec2.add(pos, step); vec2.isWithinBounds(target, [0, 0], [36, 36]); i++, target = vec2.add(target, step)) {
 					const status = this.#getSquareStatus(game, target);
-					if(hasJumped) {
-						attackingSquares.add(target);
-						if(status != SquareStatus.Blocked) {
-							validMoveLocations.add(target);
-						}
+					attackingSquares.add(target);
+					if(status != SquareStatus.Blocked) {
+						validMoveLocations.add(target);
 					}
 					if(status != SquareStatus.Empty) {
-						if(hasJumped) {
-							if(i - jumpStart >= 3) {
-								break;
-							}
-						} else {
-							hasJumped = true;
-							jumpStart = i;
+						if(jumpedOverPiecesCount == 3) {
+							break;
 						}
+						jumpedOverPiecesCount++;
 					}
 				}
 			});

@@ -1,0 +1,169 @@
+import Kanji from "../../components/Kanji";
+import sekaiNoShogiGreatEagle from "../../assets/sekaiNoShogiGreatEagle.png";
+import sekaiNoShogiTreacherousFox from "../../assets/sekaiNoShogiTreacherousFox.png";
+import sekaiNoShogiMountainCrane from "../../assets/sekaiNoShogiMountainCrane.png";
+import sekaiNoShogiAncientDragon from "../../assets/sekaiNoShogiAncientDragon.png";
+import { pieceName } from "./index";
+import { pieceNames, initialTsfen } from "../../lib/pieceData";
+
+# About
+This website is dedicated to the ancient Japanese board game of Taikyoku Shogi (<Kanji>大局将棋</Kanji>), a variant of shogi (often known as Japanese chess) played on a 36 × 36 board. Very little information about this game exists, and it was only discovered in 1997 when researchers were looking through the ancient family documents of the Ohashi family, a great Shogi and Go family. Only one primary source, *Taikyoku Shogi Koma* (<Kanji>大局将棋駒</Kanji>, Taikyoku Shogi Pieces) has been confirmed to exist, and was transcribed by Isao Umebayashi (<Kanji>梅林 勲</Kanji>) and Shin Okano (<Kanji>岡野 伸</Kanji>) and included in their book *Sekai no Shogi* (<Kanji>世界の将棋</Kanji>, Shogi of the World). Scans of relevant pages were uploaded to [The Chess Variant Pages](https://www.chessvariants.com/shogivariants.dir/taikyoku_english.html) alongside with translations by L. Lynn Smith. These translations made it onto Wikipedia, from where the rules used on this website were derived.
+
+An alternative set of translations were also published by George Hodges, the leading Shogi expert in the West, in his book [Ten Shogi Variants](https://web.archive.org/web/20221207220452/http://katakas.org/documents/TSV.pdf), along with the additional mention of two other sources: another from the Ohashi family documents, and one from a museum in Kyoto. He claims that all three sources have differing piece names, and most likely conflicting piece movements. Apart from here, there are no other mentions to these other two sources. Hence, *Sekai no Shogi* is the only source we currently have available for information about the game.
+
+The rules used on this website were derived from the English Wikipedia article, which we improved by looking through *Sekai no Shogi* and ensuring there were no errors from the copying process. However, there were instances where *Sekai no Shogi* did not explain something and hence varying interpretations have arisen. Importantly, the interpretations used on this website may differ from other sources such as English Wikipedia, Japanese Wikipedia or other Taikyoku Shogi software. Our interpretations and the decisions behind these are explained below.
+
+Additionally, translating piece names into English has proven a difficult task. The English piece names used on this website have been derived from L. Lynn Smith's, and improved to be more consistent in how individual kanji (characters) are translated, making it easier for players to learn how to read the piece names from the Japanese. Furthermore, modern technology (Google Translate, LLMs) as well as the abundance of information online regarding niche topics which would not have been available when L. Lynn Smith or George Hodges published their translations, has been used and referenced in order to produce what we believe is the most accurate set of translations. Contentious translations and our decisions are also listed below.
+
+## Interpretation
+### Jumping pieces
+*Sekai no Shogi* uses circles to represent a step to a square, and arrows to represent unlimited slides. Hence, putting a circle over an arrow would be redundant. However, the {pieceName("HTK")}, {pieceName("GH")}, {pieceName("RD")} and {pieceName("GE")} have diagrams such as these:
+
+<img src={sekaiNoShogiGreatEagle}/>
+
+They are accompanied by a description saying they can run and jump over pieces in such directions. We have interpreted this as being able to jump over the piece marked by the ○ and then optionally continue sliding in that direction.
+
+However, the {pieceName("TF")} and {pieceName("MC")} present further complications. Their movement diagrams are shown below:
+
+<img src={sekaiNoShogiTreacherousFox}/>
+<img src={sekaiNoShogiMountainCrane}/>
+
+<p><small>(Note that in the case of the {pieceName("MC")}, the 3 ○ is an abbreviation for ○ ○ ○. This notation is explained clearly in the book.)</small></p>
+
+Unlike the four pieces with a single intersecting circle, both the {pieceName("TF")} and {pieceName("MC")} lack any explanation. The interpretation on this website is that, in addition to sliding normally, they are able to jump over up to two and three pieces respectively in that direction, then optionally continue sliding.
+
+### Triple slashed arrow
+*Sekai no Shogi* also uses an arrow with three slashes/bars through it to describe piece movements, such as with the {pieceName("AD")}:
+
+<img src={sekaiNoShogiAncientDragon}/>
+
+The authors note that with regards to this symbol, there is no explanation in the original text (i.e. *Taikyoku Shogi Koma*), but that it is thought they can jump over up to three pieces and slide. We have interpreted it as being able to slide whilst jumping over up to three pieces in the way.
+
+This symbol can also be seen in the description of Maka Dai Dai Shogi, another large-board shogi variant, in [*Shogi Rokushu no Zushiki*](https://dl.ndl.go.jp/pid/1869566/1/109) (<Kanji>象棋六種之圖式</Kanji>, Diagrams of Six Types of Shogi), a source written in classical Japanese oftentimes conflicting with other sources. Dr. Eric Silverman presented [an argument on his blog](https://drericsilverman.com/2021/04/22/shogi-variants-translation-notes-i/) that this symbol implies the piece can move as a combination of the {pieceName("LD")} and the {pieceName("FK")}. However, the {pieceName("LD")} in Maka Dai Dai Shogi as described in *Shogi Rokushu no Zushiki* moves differently to the {pieceName("LD")} in Taikyoku Shogi, having a special move which could either be translated as jumping or being able to perform the moves of a {pieceName("L")} in that direction. Even though this is the only other usage of this symbol, due to the source's conflicts with other sources, the difficulty in interpreting it, as well as the fact that it isn't even about Taikyoku Shogi, we have decided against basing our interpretation off of it.
+
+## Translation notes
+Coming up with names for 301 unique pieces is no easy feat! Furthermore, many pieces are named after Buddhist or occasionally Shinto objects or concepts, most of which have no easy English translation. We have tried our best to make translations as literal, accurate and consistent as possible. This means we rejected most of the translations used for pieces in regular Shogi, such as using "{pieceName("FK")}" instead of "queen" and "{pieceName("FCH")}" instead of "rook". However, there were many issues we faced, as described below.
+
+### - todo -
+## Protocol v0
+Engines can communicate with this website via the protocol described below, the ATSI: Australian Taikyoku Shogi Interface. It is subject to change over time. Each time a change is made, the version number will be incremented. Versions follow [SemVer 2.0.0](https://semver.org/spec/v2.0.0.html).
+
+The current version of the ATSI is `v0`.
+
+### Terminology
+#### Client
+A piece of software which acts as a single player in the game. This could be a GUI allowing humans to play, or an engine which plays automatically.
+
+#### Game host/ Host
+A piece of software which manages the game and acts as a relay between two clients. It is responsible for ensuring both clients are aware of the game parameters (i.e. starting position, who moves first, time controls etc.) as well as making sure they don’t make illegal moves. It is also responsible for managing timers and declaring wins, losses and draws.
+
+#### Absolute evaluation
+A real number indicating how good an engine thinks the current position is <u>for the first player</u>. A positive evaluation indicates the engine thinks the position favours the first player, and a negative evaluation indicates the engine thinks the position favours the second player. The greater the magnitude of the evaluation, the more strongly the engine thinks the position favours one player.
+
+#### Command
+A command is a keyword which may be followed by multiple arguments. The keyword and any arguments must be separated by a single space (Unicode: `U+0020`, ASCII: `32`).
+
+#### Board position
+A board position is a string consisting of the file (`1` - `36`) and the rank (`a` - `jj`) next to each other. E.g. `1a` refers to the top-right corner of the board, and `36jj` refers to the bottom-left corner of the board (from the first player's view).
+
+#### TSFEN
+A string representing the state of the board and which player's turn it is to move. ~ todo ~
+
+### Protocol description
+The ATSI describes how a game host and a client communicate with each other. In a game, there must be exactly two clients and one game host.
+
+Communication is achieved through text-based messages.
+
+Messages must consist of exactly one command, and must finish with a `\n` (Unicode: `U+000A`, ASCII: `10`).
+
+The game host can send messages to each client individually, or to both clients.
+
+### Commands
+#### Host → Client
+##### `atsiinit [VERSION: "v0"]`
+Initialises communication with the client via the ATSI v0.
+
+##### `identify`
+Tells the client to provide information about itself, via the `info` command.
+
+##### `time [STARTING_TIME: number] [INCREMENT?: number = 0]`
+Tells the client that the the time controls are `STARTING_TIME` seconds with an increment of `INCREMENT` seconds per move.
+
+##### `side [0 | 1]`
+Tells the client they are moving first (`0`) or second (`1`).
+
+##### `startgame [INITIAL_POS: string]`
+Tells the client the game has started in the position `INITIAL_POS`. `INITIAL_POS` can either be a TSFEN string or the string `"initial"`, which is equivalent to the TSFEN string below.
+<details>
+<summary>`"initial"` TSFEN</summary>
+<code>
+{initialTsfen}
+</code>
+</details>
+
+##### `win [REASON?: string]`
+Tells the client the game resulted in a win for them.
+
+##### `loss [REASON?: string]`
+Tells the client the game resulted in a loss for them.
+
+##### `draw [REASON?: string]`
+Tells the client the game resulted in a draw.
+
+##### `opmove [START_POS: board position] [STEP_POS_1?: board position] [STEP_POS_2?: board position] ... [STEP_POS_𝑛?: board position] [END_POS: board position] [TIME: number] [OP_TIME: number]`
+Tells the client that its opponent moved. Syntax is the same as the `move` command, except for the two additional arguments `TIME` and `OP_TIME` at the end, representing how much time left the client and its opponent respectively have left in seconds. Although these figures could be calculated from the time controls, latency cannot be calculated and hence including them here ensures the client does get out of sync.
+
+##### `setparam [PARAM_NAME: string] [PARAM_VALUE]`
+Tells an engine client to set a specified parameter.
+
+##### `quit`
+Tells the client to quit communicating via the ATSI.
+
+
+#### Client → Host
+##### `atsiok`
+Tells the host the client has initialised communication via the ATSI. This command should be sent as a response to the `atsiinit` command.
+
+##### `info [NAME: string] [DESCRIPTION?: string] [VERSION?: string] [AUTHOR?: string] [LOGO?: string]`
+Tells the host information about the client. This command should be sent as a response to the `identify` command. Only the first parameter, the client name, is required. If present, the `LOGO` parameter must be a URL to an image, which may be a base-64 encoded data URL.
+
+##### `param [PARAM_NAME: string] [PARAM_1_TYPE]`
+Provides a parameter that can be used to customise the engine client. This command should be sent after This makes it easier for engine developers to test their engines since GUIs attached to the game host can allow them to change parameters. The `PARAM_1_TYPE` argument should be one of the following:
+- `string`
+- `bool`
+- `number`
+- `number[MIN, MAX]` (both bounds inclusive)
+- `int`
+- `int[MIN, MAX]` (both bounds inclusive)
+- `enum["VALUE_1"|"VALUE_2"|...|"VALUE_𝑛"]`
+
+Multiple parameters may be provided through multiple `param` commands.
+
+##### `move [START_POS: board position] [STEP_POS_1?: board position] [STEP_POS_2?: board position] ... [STEP_POS_𝑛?: board position] [END_POS: board position]`
+Tells the host the client has moved the piece at `START_POS` to `END_POS`, capturing a piece at `END_POS` if present. If any `STEP_POS_𝑛` are present, it means that the piece performed a multi-step move and moved to the pos these board positions, capturing all pieces present. The `STEP_POS_𝑛` arguments are only needed when the piece being moved has multiple paths to move to the same end position, and each path results in a different outcome.
+
+Some examples of when the `STEP_POS_𝑛` arguments are needed or not:
+- Diagonal hook movers which can promote (i.e. {pieceName("C")} and {pieceName("PCK")}) need a `STEP_POS_1` argument when they have two paths to get to `END_POS` and one crosses over the promotion line (and hence would result in the piece promoting upon finishing the move), and one doesn't. If only a single path is present, the `STEP_POS_1` argument can be omitted. If two paths are present and only one would result in promotion, it is assumed that the piece took the path that didn't result in promotion. Even if the `STEP_POS_1` argument is not required, including it in the command is valid as long as the path is valid.
+- Range capturing pieces always capture all pieces they jump over, hence no `STEP_POS_𝑛` arguments are needed.
+- The lion pieces (i.e. {pieceName("L")}, {pieceName("LH")}, {pieceName("FFI")} and {pieceName("BD")}) only need the `STEP_POS_1` argument when capturing two pieces in one turn, or performing stationary feeding. In both cases the position of the intermediate step is needed.
+- The {pieceName("FE")} needs `STEP_POS_𝑛` when performing stationary feeding, or when capturing all pieces in a row in an orthogonal direction, in which case all the board positions of captured pieces along that direction are needed.
+
+For all of these cases, it is still the responsibility of the game host to ensure that the move provided is legal.
+
+##### `resign [REASON?: string]`
+Tells the host the client has resigned.
+
+##### `eval [EVALUATION: number]`
+For engines, tells the host the absolute evaluation after its last move. Sending this command is optional, but could be used by GUIs connected to the game host to show an evaluation-time graph.
+
+##### `quit`
+Tells the host to quit communicating via the ATSI. If a game is ongoing, it will count as a resignation. 
+
+## Credits
+A massive thank you to George Hodges, Isao Umebayashi, Shin Okano, L. Lynn Smith, Dr. Eric Silverman and the Wikipedia editors for helping make this website possible.
+
+### External links:
+<ul>
+  <li>[Taikyoku shogi on Wikipedia](https://en.wikipedia.org/wiki/Taikyoku_shogi)</li>
+  <li>[TaikyokuShogiSente.svg](https://en.wikipedia.org/wiki/Taikyoku_shogi#/media/File:TaikyokuShogiSente.svg) by [TKR101010](https://en.wikipedia.org/wiki/User:TKR101010), used under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0). Modified from original.</li>
+</ul>
