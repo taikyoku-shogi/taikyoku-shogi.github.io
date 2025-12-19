@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import Button from "./Button";
 import WebSocketClient from "../lib/atsi/WebSocketClient";
 import { Player } from "../types/TaikyokuShogi";
 

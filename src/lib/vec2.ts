@@ -41,7 +41,7 @@ export class Set {
 	 */
 	add(value: [number, number]): number {
 		if(this.#bounds && !isWithinBounds(value, this.#bounds[0], this.#bounds[1])) {
-			return;
+			return -1;
 		}
 		let val1s = this.#val0s.get(value[0]);
 		if(!val1s) {

@@ -100,7 +100,7 @@ export default function PlayPage() {
 			</div>
 			<div>
 				<div class={styles.sidebar}>
-					{gamemode? (
+					{gamemode !== null? (
 						<>
 							<h2>{getGamemodeName(gamemode)}</h2>
 							{(gamemode == Gamemode.Aivp || gamemode == Gamemode.Aivai) && (
@@ -118,7 +118,7 @@ export default function PlayPage() {
 							)}
 							<p>Move {game.moveCounter}</p>
 							<p>Player {game.getCurrentPlayer() + 1}'s turn</p>
-							{game.getStatus() != GameStatus.Playing && <h3>{game.getStatus() == GameStatus.SenteWin? "Sente" : "Gote"} win</h3>}
+							{game.getStatus() != GameStatus.Playing && <h3>Player {game.getStatus()} wins!</h3>}
 							<Button onLeftMouseDown={() => setBottomPlayer(bottomPlayer == Player.Sente? Player.Gote : Player.Sente)}>Flip board</Button>
 							<Button onLeftMouseDown={() => {
 								const tsfen = exportTsfen(game);

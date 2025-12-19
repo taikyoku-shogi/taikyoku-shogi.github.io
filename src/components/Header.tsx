@@ -5,7 +5,7 @@ export default function Header() {
 	return (
 		<header className={styles.header}>
 			<nav>
-				<LinkToPage page="/" text="Home"/>
+				<LinkToPage page="" text="Home"/>
 				<LinkToPage page="About"/>
 				<LinkToPage page="Rules"/>
 				<LinkToPage page="Play"/>

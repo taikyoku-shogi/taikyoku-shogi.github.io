@@ -1,11 +1,11 @@
-import type { Tuple } from "../../types/meta";
+import { Tuple } from "../../types/meta";
 import { GameStatus, Move, Player, Vec2 } from "../../types/TaikyokuShogi";
 import { boardPosToVec } from "./atsiUtils";
 import { directions } from "../betzaNotationParser";
 import Game from "../Game";
 import { pieceMovements } from "../pieceData";
 import * as vec2 from "../vec2";
-import type { Client, GameSettings, MsgFunc } from "./atsi";
+import { Client, GameSettings, MsgFunc } from "./atsi";
 
 const PROTOCOL_VERSION = "v0";
 
@@ -33,8 +33,8 @@ export default class GameHost {
 		this.#rerenderGui = rerenderGui;
 	}
 	connectClient(client: Client, player: Player) {
-		this.#clientOut[player] = (message: string) => [console.log(`Sending message to player ${player+1}:`, message), client.sendMessage(message)];
-		client.messageHost = (message: string) => [console.log(`Received message from player ${player+1}:`, message), this.#handleMessage(message, player)];
+		this.#clientOut[player] = (message: string) => [console.debug(`Sending message to player ${player+1}:`, message), client.sendMessage(message)];
+		client.messageHost = (message: string) => [console.debug(`Received message from player ${player+1}:`, message), this.#handleMessage(message, player)];
 		
 		this.#clientOut[player](`atsiinit ${PROTOCOL_VERSION}`);
 	}
@@ -119,6 +119,9 @@ export default class GameHost {
 					this.game.resign(client);
 					resigned = true;
 				}
+			} break;
+			case "log": {
+				console.info(`Log from client ${client + 1}: ${args.join(" ")}`);
 			} break;
 			default: {
 				console.error(`Unknown command: "${command}", "${message}"`);

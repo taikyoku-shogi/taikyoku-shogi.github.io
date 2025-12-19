@@ -1,4 +1,4 @@
-import type { Client, MsgFunc } from "./atsi";
+import { Client, MsgFunc } from "./atsi";
 
 type EventFunc = (ws: WebSocketClient) => void;
 

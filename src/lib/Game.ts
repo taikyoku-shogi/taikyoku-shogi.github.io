@@ -14,6 +14,10 @@ export default class Game {
 	get royalPiecesLeft() {
 		return this.#royalPiecesLeft;
 	}
+	#lastMove?: Move;
+	get lastMove() {
+		return this.#lastMove;
+	}
 	#resignedPlayer: Player | null = null;
 	
 	readonly #moveCache: Move[][] = Array(1296).fill(null).map(() => []);
@@ -94,6 +98,7 @@ export default class Game {
 			move.intermediateSteps.forEach(step => this.setSquare(step, null));
 		}
 		this.#moveCounter++;
+		this.#lastMove = move;
 	}
 	pieceCanMove(piecePos: Vec2): boolean {
 		return this.getMovesAtSquare(piecePos).length > 0;
