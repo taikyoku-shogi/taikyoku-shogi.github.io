@@ -14,6 +14,7 @@ export default class Game {
 	get royalPiecesLeft() {
 		return this.#royalPiecesLeft;
 	}
+	#resignedPlayer: Player | null = null;
 	
 	readonly #moveCache: Move[][] = Array(1296).fill(null).map(() => []);
 	readonly twoWayAttackMap: TwoWayNumericalMapping = new TwoWayNumericalMapping();
@@ -66,13 +67,16 @@ export default class Game {
 		if(!movingPiece) {
 			throw new Error(`Cannot make move: No piece at ${vec2.stringify(move.start)}`);
 		}
+		if(movingPiece.owner != this.getCurrentPlayer()) {
+			throw new Error(`Cannot make move: The piece at ${vec2.stringify(move.start)} belongs to the other player!`);
+		}
 		this.setSquare(move.start, null);
 		this.setSquare(move.end, movingPiece);
 		
 		if(movingPiece.canPromote()) {
 			const positionsToCheck = [move.end];
-			if(move.intermediateStep) {
-				positionsToCheck.push(move.intermediateStep);
+			if(move.intermediateSteps) {
+				positionsToCheck.push(...move.intermediateSteps);
 			}
 			if(positionsToCheck.some(pos => Game.isPosInPromotionZone(pos, movingPiece.owner))) {
 				const promotedPiece = movingPiece.promote();
@@ -86,8 +90,8 @@ export default class Game {
 				this.setSquare(pos, null);
 			}
 		}
-		if(move.intermediateStep) {
-			this.setSquare(move.intermediateStep, null);
+		if(move.intermediateSteps) {
+			move.intermediateSteps.forEach(step => this.setSquare(step, null));
 		}
 		this.#moveCounter++;
 	}
@@ -137,7 +141,18 @@ export default class Game {
 	countMovesAt(pos: Vec2): number {
 		return this.#moveCache[Game.posToI(pos)].length;
 	}
+	resign(player: Player) {
+		if(this.#resignedPlayer) {
+			throw new Error(`Player ${player} resign: Player ${this.#resignedPlayer} has already resigned!`);
+		}
+		this.#resignedPlayer = player;
+	}
 	getStatus(): GameStatus {
+		if(this.#resignedPlayer === Player.Sente) {
+			return GameStatus.GoteWin;
+		} else if(this.#resignedPlayer === Player.Gote) {
+			return GameStatus.SenteWin;
+		}
 		if(this.#royalPiecesLeft[Player.Sente] && this.#royalPiecesLeft[Player.Gote]) {
 			return GameStatus.Playing;
 		} else if(this.#royalPiecesLeft[Player.Sente] && !this.#royalPiecesLeft[Player.Gote]) {

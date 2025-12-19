@@ -45,10 +45,10 @@ This symbol can also be seen in the description of Maka Dai Dai Shogi, another l
 Coming up with names for 301 unique pieces is no easy feat! Furthermore, many pieces are named after Buddhist or occasionally Shinto objects or concepts, most of which have no easy English translation. We have tried our best to make translations as literal, accurate and consistent as possible. This means we rejected most of the translations used for pieces in regular Shogi, such as using "{pieceName("FK")}" instead of "queen" and "{pieceName("FCH")}" instead of "rook". However, there were many issues we faced, as described below.
 
 ### - todo -
-## Protocol v0
+## Protocol v00
 Engines can communicate with this website via the protocol described below, the ATSI: Australian Taikyoku Shogi Interface. It is subject to change over time. Each time a change is made, the version number will be incremented. Versions follow [SemVer 2.0.0](https://semver.org/spec/v2.0.0.html).
 
-The current version of the ATSI is `v0`.
+The current version of the ATSI is `v00`.
 
 ### Terminology
 #### Client
@@ -80,8 +80,8 @@ The game host can send messages to each client individually, or to both clients.
 
 ### Commands
 #### Host → Client
-##### `atsiinit [VERSION: "v0"]`
-Initialises communication with the client via the ATSI v0.
+##### `atsiinit [VERSION: "v00"]`
+Initialises communication with the client via the ATSI v00.
 
 ##### `identify`
 Tells the client to provide information about itself, via the `info` command.
@@ -89,7 +89,7 @@ Tells the client to provide information about itself, via the `info` command.
 ##### `time [STARTING_TIME: number] [INCREMENT?: number = 0]`
 Tells the client that the the time controls are `STARTING_TIME` seconds with an increment of `INCREMENT` seconds per move.
 
-##### `side [0 | 1]`
+##### `player [0 | 1]`
 Tells the client they are moving first (`0`) or second (`1`).
 
 ##### `startgame [INITIAL_POS: string]`
@@ -157,7 +157,7 @@ Tells the host the client has resigned.
 For engines, tells the host the absolute evaluation after its last move. Sending this command is optional, but could be used by GUIs connected to the game host to show an evaluation-time graph.
 
 ##### `quit`
-Tells the host to quit communicating via the ATSI. If a game is ongoing, it will count as a resignation. 
+Tells the host to quit communicating via the ATSI. If a game is ongoing, it will count as a resignation.
 
 ## Credits
 A massive thank you to George Hodges, Isao Umebayashi, Shin Okano, L. Lynn Smith, Dr. Eric Silverman and the Wikipedia editors for helping make this website possible.

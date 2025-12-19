@@ -1,4 +1,4 @@
-import { Dispatch, useCallback, useMemo, useRef, useState } from "preact/hooks";
+import { Dispatch, useCallback, useImperativeHandle, useMemo, useRef, useState } from "preact/hooks";
 import Game from "../lib/Game";
 import { joinClasses, leftClickOnly, range } from "../lib/utils";
 import { GameStatus, Move, Player, Vec2 } from "../types/TaikyokuShogi";
@@ -8,33 +8,40 @@ import BoardSquare from "./BoardSquare";
 import { useForceRerender } from "../lib/hooks";
 import Piece from "../lib/Piece";
 import { hypot, sqrt } from "../lib/math";
+import { forwardRef } from "preact/compat";
 
 type MultiStepMove = {
 	currentPos: Vec2,
 	possibleMoves: Move[]
 };
 
-export default function ShogiBoard({
+export type ShogiBoardHandle = {
+	forceRerender: () => void
+};
+
+export default forwardRef<ShogiBoardHandle, {
+	game: Game,
+	bottomPlayer?: Player,
+	selectedSquare: Vec2 | null,
+	setSelectedSquare: Dispatch<Vec2 | null>,
+	onPieceHover?: (piece: Piece) => void,
+	onMove?: () => void,
+	interactive?: boolean,
+	debug?: boolean,
+	destroyHax?: boolean,
+	getCreativeHaxPiece?: (() => Piece | null) | null
+}>(function ShogiBoard({
 	game,
 	bottomPlayer = Player.Sente,
 	selectedSquare,
 	setSelectedSquare,
 	onPieceHover,
 	onMove,
+	interactive = false,
 	debug = false,
 	destroyHax = false,
 	getCreativeHaxPiece = null
-}: {
-	game: Game,
-	bottomPlayer?: Player,
-	selectedSquare: Vec2 | null,
-	setSelectedSquare: Dispatch<Vec2 | null>,
-	onMove?: () => void,
-	onPieceHover?: (piece: Piece) => void,
-	debug?: boolean,
-	destroyHax?: boolean,
-	getCreativeHaxPiece?: (() => Piece | null) | null
-}) {
+}, ref) {
 	const contElRef = useRef<HTMLDivElement | null>(null);
 	
 	const forceRerender = useForceRerender();
@@ -43,6 +50,10 @@ export default function ShogiBoard({
 	const [multiStepMove, setMultiStepMove] = useState<MultiStepMove | null>(null);
 	const [lastMove, setLastMove] = useState<Move | null>(null);
 	const [lastMoveTime, setLastMoveTime] = useState(0);
+	
+	useImperativeHandle(ref, () => ({
+		forceRerender
+	}));
 	
 	const calculateBoardPos = useCallback(([x, y]: [number, number]): Vec2 => {
 		// return bottomPlayer == Player.Sente? [x, y] : [35 - x, 35 - y];
@@ -84,7 +95,7 @@ export default function ShogiBoard({
 			return;
 		}
 		if(cell.classList.contains(styles.moveTarget)) {
-			const validMoves = multiStepMove? multiStepMove.possibleMoves.filter(move => vec2.equals(move.end, pos)) : moves!.filter(move => vec2.equals(move.intermediateStep ?? move.end, pos));
+			const validMoves = multiStepMove? multiStepMove.possibleMoves.filter(move => vec2.equals(move.end, pos)) : moves!.filter(move => vec2.equals(move.intermediateSteps?.[0] ?? move.end, pos));
 			if(validMoves.length > 1) {
 				setMultiStepMove({
 					currentPos: pos,
@@ -135,13 +146,13 @@ export default function ShogiBoard({
 		}
 	};
 	
-	const moveTargets = useMemo(() => multiStepMove? new vec2.Set(multiStepMove.possibleMoves.map(m => m.end)) : moves? new vec2.Set(moves.map(m => m.intermediateStep ?? m.end)) : null, [moves, multiStepMove]);
+	const moveTargets = useMemo(() => multiStepMove? new vec2.Set(multiStepMove.possibleMoves.map(m => m.end)) : moves? new vec2.Set(moves.map(m => m.intermediateSteps?.[0] ?? m.end)) : null, [moves, multiStepMove]);
 	const selectedPieceCacheKey = selectedSquare? Game.posToI(selectedSquare) : -1;
 	const attackMap = game.twoWayAttackMap.getForwards(selectedPieceCacheKey);
 	const reverseAttackMap = game.twoWayAttackMap.getBackwards(selectedPieceCacheKey);
 	
 	const moveAnimOffset = lastMove? vec2.sub(lastMove.start, lastMove.end) : [0, 0];
-	const moveAnimDuration = sqrt(hypot(...moveAnimOffset)) / 12;
+	const moveAnimDuration = sqrt(hypot(...moveAnimOffset)) / 12 + 0.02;
 	
 	return (
 		<div class={joinClasses(
@@ -155,7 +166,7 @@ export default function ShogiBoard({
 					selectedSquare && styles.hasSelectedSquare,
 					currentPlayer == Player.Sente? styles.sente : styles.gote
 				)}
-				onMouseDown={leftClickOnly(handleClick)}
+				onMouseDown={interactive? leftClickOnly(handleClick) : undefined}
 				onMouseMove={handleHover}
 				style={`
 					--anim-offset-x: ${moveAnimOffset[0] * 100}%;
@@ -178,7 +189,7 @@ export default function ShogiBoard({
 						const inAttackMap = attackMap?.has(boardI);
 						const inReverseAttackMap = reverseAttackMap?.has(boardI);
 						
-						const wasLastMoveStart = lastMove && (vec2.equals(pos, lastMove.start) || (lastMove.intermediateStep && vec2.equals(pos, lastMove.intermediateStep)));
+						const wasLastMoveStart = lastMove && (vec2.equals(pos, lastMove.start) || (lastMove.intermediateSteps && lastMove.intermediateSteps?.some(step => vec2.equals(pos, step))));
 						const wasLastMoveEnd = lastMove && vec2.equals(pos, lastMove.end);
 						
 						return (
@@ -189,7 +200,7 @@ export default function ShogiBoard({
 								piece={piece}
 								className={joinClasses(
 									piece && piece.species,
-									canMove && styles.canMove,
+									interactive && canMove && styles.canMove,
 									isSelectedSquare && styles.selected,
 									isMoveTarget && styles.moveTarget,
 									piece && (piece.owner == Player.Sente? styles.sente : styles.gote),
@@ -206,4 +217,4 @@ export default function ShogiBoard({
 			</div>
 		</div>
 	);
-}
+});

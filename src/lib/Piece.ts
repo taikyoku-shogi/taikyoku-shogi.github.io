@@ -57,7 +57,7 @@ export default class Piece {
 			bounds: [[0, 0], [36, 36]]
 		});
 		const validMoveLocations = new vec2.Set();
-		const validMoveLocationsWithIntermediateStep = new JSONSet<{ end: Vec2, intermediateStep: Vec2 }>();
+		const validMoveLocationsWithintermediateSteps = new JSONSet<{ end: Vec2, intermediateSteps: Vec2[] }>();
 		
 		Object.entries(movements.slides).forEach(([dir, range]) => {
 			const rawStep = directions[dir];
@@ -96,16 +96,16 @@ export default class Piece {
 					const [moves, attacks] = this.#getMovesAndAttackingSquaresFromMovements(move1.end, game, mv2, pos);
 					attacks.forEach(pos => attackingSquares.add(pos));
 					if(mv1.canContinueAfterCapture) {
-						moves.forEach(move => validMoveLocationsWithIntermediateStep.add({
+						moves.forEach(move => validMoveLocationsWithintermediateSteps.add({
 							end: move.end,
-							intermediateStep: move1.end
+							intermediateSteps: [move1.end]
 						}));
 					} else {
 						moves.forEach(move => {
-							if(move.intermediateStep && Game.isPosInPromotionZone(move.intermediateStep, this.owner)) {
-								validMoveLocationsWithIntermediateStep.add({
+							if(move.intermediateSteps?.some(step => Game.isPosInPromotionZone(step, this.owner))) {
+								validMoveLocationsWithintermediateSteps.add({
 									end: move.end,
-									intermediateStep: move1.end
+									intermediateSteps: [move1.end]
 								});
 							}
 							validMoveLocations.add(move.end);
@@ -138,7 +138,7 @@ export default class Piece {
 		const moves = [...validMoveLocations.values.map(end => ({
 			start: pos,
 			end
-		})), ...[...validMoveLocationsWithIntermediateStep].map(move => ({
+		})), ...[...validMoveLocationsWithintermediateSteps].map(move => ({
 			start: pos,
 			...move
 		}))];

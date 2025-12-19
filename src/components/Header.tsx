@@ -2,12 +2,10 @@ import { useLocation } from "preact-iso";
 import styles from "./Header.module.css";
 
 export default function Header() {
-	const { url } = useLocation();
-	
 	return (
 		<header className={styles.header}>
 			<nav>
-				<a href="/" class={url == "/" && styles.active}>Home</a>
+				<LinkToPage page="/" text="Home"/>
 				<LinkToPage page="About"/>
 				<LinkToPage page="Rules"/>
 				<LinkToPage page="Play"/>
@@ -17,12 +15,14 @@ export default function Header() {
 }
 
 function LinkToPage({
-	page
+	page,
+	text
 }: {
-	page: string
+	page: string,
+	text?: string
 }) {
 	const { url } = useLocation();
 	const pageUrl = `/${page.toLowerCase()}`;
 	
-	return <a href={pageUrl} class={url == pageUrl && styles.active}>{page}</a>;
+	return <a href={pageUrl} class={url.startsWith(pageUrl)? styles.active : undefined}>{text ?? page}</a>;
 }
