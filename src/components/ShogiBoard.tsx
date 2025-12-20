@@ -48,9 +48,9 @@ export default forwardRef<ShogiBoardHandle, {
 	const currentPlayer = game.getCurrentPlayer();
 	const [moves, setMoves] = useState<Move[] | null>(null);
 	const [multiStepMove, setMultiStepMove] = useState<MultiStepMove | null>(null);
-	const [lastMoveTime, setLastMoveTime] = useState(0);
 	
 	const lastMove = game.lastMove;
+	const lastMoveTime = useMemo(() => Date.now(), [game.moveCounter]);
 	
 	useImperativeHandle(ref, () => ({
 		forceRerender
@@ -107,7 +107,6 @@ export default forwardRef<ShogiBoardHandle, {
 				const move = validMoves[0];
 				// console.log("making move", move)
 				game.makeMove(move);
-				setLastMoveTime(Date.now());
 				console.log(`${game.countAllMoves()} moves`);
 				if(game.getStatus() != GameStatus.Playing) {
 					console.log(`WIN FOR ${game.getStatus() == GameStatus.SenteWin? "SENTE" : "GOTE"}!!!!!`);

@@ -34,7 +34,7 @@ export default class GameHost {
 	}
 	connectClient(client: Client, player: Player) {
 		this.#clientOut[player] = (message: string) => [console.debug(`Sending message to player ${player+1}:`, message), client.sendMessage(message)];
-		client.messageHost = (message: string) => [console.debug(`Received message from player ${player+1}:`, message), this.#handleMessage(message, player)];
+		client.messageHost = (message: string) => this.#handleMessage(message, player);
 		
 		this.#clientOut[player](`atsiinit ${PROTOCOL_VERSION}`);
 	}
@@ -70,6 +70,7 @@ export default class GameHost {
 			return;
 		}
 		const [command, ...args] = message.split(" ");
+		if(command != "log" && command != "eval") console.debug(`Received message from player ${client + 1}:`, message)
 		let resigned = false;
 		switch(command) {
 			case "info": {
@@ -112,7 +113,7 @@ export default class GameHost {
 				resigned = true;
 			} break;
 			case "eval": {
-				console.log(`Eval from client ${client + 1}: ${args[1]}`)
+				console.log(`Eval from client ${client + 1}: ${args[0]}`)
 			} break;
 			case "quit": {
 				if(this.game.getStatus() == GameStatus.Playing) {
@@ -163,7 +164,7 @@ export default class GameHost {
 		const movements = pieceMovements.get(movingPiece.species)!;
 		const deltaPosition = vec2.sub(endPos, startPos);
 		
-		if(movements.jumps.some(jump => vec2.equals(jump, deltaPosition))) {
+		if(movements.jumps.map(jump => movementDirToBoardDir(jump, movingPiece.owner)).some(jump => vec2.equals(jump, deltaPosition))) {
 			return;
 		}
 		const dirVec = vec2.sign(deltaPosition);
@@ -185,6 +186,7 @@ export default class GameHost {
 						throw CannotMovePieceError(`There is a piece at ${vec2.stringify([x, y])} in the way of the slide in the direction ${dirName}!`);
 					}
 				}
+				[x, y] = vec2.add([x, y], dirVec);
 			}
 		}
 		return;
@@ -200,6 +202,9 @@ function extractMovePositions(args: string[]): [Vec2, Vec2, Vec2[]] {
 	} catch(e) {
 		throw new AtsiError(`Incorrectly formatted move command. "${JSON.stringify(args)}", ${e}`);
 	}
+}
+function movementDirToBoardDir(movement: Vec2, pieceOwner: Player): Vec2 {
+	return pieceOwner == Player.Sente? [movement[0], -movement[1]] : [-movement[0], movement[1]];
 }
 
 class AtsiError extends Error {
