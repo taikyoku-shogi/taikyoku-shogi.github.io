@@ -118,6 +118,12 @@ export default function PlayPage() {
 							)}
 							<p>Move {game.moveCounter}</p>
 							<p>Player {game.getCurrentPlayer() + 1}'s turn</p>
+							{(gamemode == Gamemode.Aivai) && (
+								<>
+								<h4>Player 1 eval: {gameHost.latestEvals[0]}</h4>
+								<h4>Player 2 eval: {gameHost.latestEvals[1]}</h4>
+								</>
+							)}
 							{game.getStatus() != GameStatus.Playing && <h3>Player {game.getStatus()} wins!</h3>}
 							<Button onLeftMouseDown={() => setBottomPlayer(bottomPlayer == Player.Sente? Player.Gote : Player.Sente)}>Flip board</Button>
 							<Button onLeftMouseDown={() => {

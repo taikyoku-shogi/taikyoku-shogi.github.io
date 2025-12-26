@@ -13,6 +13,7 @@ export default class GameHost {
 	game: Game;
 	readonly settings;
 	readonly #rerenderGui: () => void;
+	latestEvals: Vec2 = [NaN, NaN];
 	#clientOut: [MsgFunc | undefined, MsgFunc | undefined] = [undefined, undefined];
 	#timeLeft: Vec2;
 	#lastMoveTime: number = -1;
@@ -57,6 +58,7 @@ export default class GameHost {
 		
 		if(!this.#initialised[client]) {
 			if(message == "atsiok") {
+				this.#clientOut[client]!("identify");
 				this.#clientOut[client]!(`player ${client}`);
 				this.#clientOut[client]!(`time ${this.settings.timeControls.join(" ")}`);
 				this.#initialised[client] = true;
@@ -69,7 +71,7 @@ export default class GameHost {
 			}
 			return;
 		}
-		const [command, ...args] = message.split(" ");
+		const [command, ...args] = message.trim().split(" ");
 		if(command != "log" && command != "eval") console.debug(`Received message from player ${client + 1}:`, message)
 		let resigned = false;
 		switch(command) {
@@ -114,6 +116,7 @@ export default class GameHost {
 			} break;
 			case "eval": {
 				console.log(`Eval from client ${client + 1}: ${args[0]}`)
+				this.latestEvals[client] = +args[0];
 			} break;
 			case "quit": {
 				if(this.game.getStatus() == GameStatus.Playing) {
@@ -126,6 +129,7 @@ export default class GameHost {
 			} break;
 			default: {
 				console.error(`Unknown command: "${command}", "${message}"`);
+				return;
 			}
 		}
 		
@@ -174,7 +178,7 @@ export default class GameHost {
 				return; // no checks for range capturing pieces
 			}
 			let [x, y] = vec2.add(startPos, dirVec);
-			const threshold = movements.tripleSlashedArrowDirs.includes(dirName)? 3 : 0;
+			const threshold = movements.tripleSlashedArrowDirs.map(dir => movementDirToBoardDir(directions[dir], movingPiece.owner)).some(dir => vec2.equals(dir, dirVec))? 3 : 0;
 			let piecesInTheWay = 0;
 			while(!vec2.equals([x, y], endPos)) {
 				if(this.game.getSquare([x, y])) {
