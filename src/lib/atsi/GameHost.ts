@@ -26,12 +26,16 @@ export default class GameHost {
 	#initialised: [boolean, boolean] = [false, false];
 	
 	#info: [Tuple<string | undefined, 5> | [], Tuple<string | undefined, 5> | []] = [[], []];
+	#tsfens: string[] = [];
 	
 	constructor(game: Game, settings: GameSettings, rerenderGui: () => void) {
 		this.game = game;
 		this.settings = settings;
 		this.#timeLeft = [settings.timeControls[0], settings.timeControls[0]];
 		this.#rerenderGui = rerenderGui;
+		
+		// @ts-expect-error
+		globalThis.tsfen = () => [this.#clientOut[0]?.("tsfen"), this.#clientOut[1]?.("tsfen")];
 	}
 	connectClient(client: Client, player: Player) {
 		this.#clientOut[player] = (message: string) => [console.debug(`Sending message to player ${player+1}:`, message), client.sendMessage(message)];
@@ -103,11 +107,28 @@ export default class GameHost {
 					this.#lastMoveTime = performance.now();
 					
 					this.#clientOut[1 - client]!(`opmove ${args.join(" ")} ${this.#timeLeft[1 - client]} ${this.#timeLeft[client]}`);
+					
+					const gameStatus = this.game.getStatus();
+					if(gameStatus == GameStatus.SenteWin) {
+						this.#clientOut[0]!("win");
+						this.#clientOut[1]!("loss");
+					} else if(gameStatus == GameStatus.GoteWin) {
+						this.#clientOut[1]!("win");
+						this.#clientOut[0]!("loss");
+					}
 				} catch(e) {
 					// must be invalid!!!!
 					console.error(e);
 					this.game.resign(client);
 					resigned = true;
+				}
+			} break;
+			case "testmove": {
+				try {
+					const [startPos, endPos, steps] = extractMovePositions(args);
+					this.#validateMove(startPos, endPos, steps);
+				} catch(e) {
+					console.error("INVALID MOVE!!", message, e);
 				}
 			} break;
 			case "resign": {
@@ -126,6 +147,20 @@ export default class GameHost {
 			} break;
 			case "log": {
 				console.info(`Log from client ${client + 1}: ${args.join(" ")}`);
+				if(args.some(a => a.toLowerCase().includes("tsfen"))) {
+					const moveCounter = +args.at(-1)!;
+					const tsfenBoard = args.at(-2)!;
+					if(moveCounter in this.#tsfens) {
+						const existingTsfenBoard = this.#tsfens[moveCounter];
+						if(tsfenBoard != existingTsfenBoard) {
+							// debugger;
+							console.error(`Mismatching TSFENS!`);
+							// throw new Error(`Mismatching TSFENS!\n${tsfenBoard}\n${existingTsfenBoard}`);
+						}
+					} else {
+						this.#tsfens[moveCounter] = tsfenBoard;
+					}
+				}
 			} break;
 			default: {
 				console.error(`Unknown command: "${command}", "${message}"`);

@@ -1,5 +1,7 @@
 import { GameStatus, Move, PieceSpecies, Player, Vec2 } from "../types/TaikyokuShogi";
+import { directions } from "./betzaNotationParser";
 import Piece from "./Piece";
+import { pieceMovements } from "./pieceData";
 import { parseTsfen } from "./tsfen";
 import { TwoWayNumericalMapping } from "./utils";
 import * as vec2 from "./vec2";
@@ -90,8 +92,11 @@ export default class Game {
 		
 		if(movingPiece.isRangeCapturing) {
 			const movementDir = vec2.sign(vec2.sub(move.end, move.start));
-			for(let pos = vec2.add(move.start, movementDir); !vec2.equals(pos, move.end); pos = vec2.add(pos, movementDir)) {
-				this.setSquare(pos, null);
+			const slides = pieceMovements.get(movingPiece.species)!.slides;
+			if(Object.entries(slides).some(([dir, range]) => vec2.equals(directions[dir], movementDir) && range == Infinity)) {
+				for(let pos = vec2.add(move.start, movementDir); !vec2.equals(pos, move.end); pos = vec2.add(pos, movementDir)) {
+					this.setSquare(pos, null);
+				}
 			}
 		}
 		if(move.intermediateSteps) {
