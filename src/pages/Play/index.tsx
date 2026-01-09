@@ -1,5 +1,5 @@
 import Game from "../../lib/Game";
-import { useMemo, useRef, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { initialTsfen } from "../../lib/pieceData";
 import { GameStatus, PieceSpecies, Player, Vec2 } from "../../types/TaikyokuShogi";
 import ShogiBoard, { ShogiBoardHandle } from "../../components/ShogiBoard";
@@ -19,6 +19,7 @@ import { useForceRerender, useToggle } from "../../lib/hooks";
 import { useLocation } from "preact-iso";
 import EngineSelector from "../../components/EngineSelector";
 import GameHost from "../../lib/atsi/GameHost";
+import { Client } from "../../lib/atsi/atsi";
 
 enum Gamemode {
 	Pvp,
@@ -64,6 +65,25 @@ export default function PlayPage() {
 	
 	const gamemode = path == "/play/pvp"? Gamemode.Pvp : path == "/play/pvai"? Gamemode.Pvai : path == "/play/aivp"? Gamemode.Aivp : path == "/play/aivai"? Gamemode.Aivai : null;
 	
+	const [playerClient, setPlayerClient] = useState<Client | null>(null);
+	
+	useEffect(() => {
+		if(!playerClient && gamemode === Gamemode.Pvai) {
+			console.log("HAIAHIA")
+			const client: Client = {
+				sendMessage: msg => {
+					console.log("Message from gamehost:", msg);
+					const [command, ...args] = msg.split(" ");
+					if(command == "atsiinit") {
+						client.messageHost!("atsiok");
+					}
+				}
+			};
+			setPlayerClient(client);
+			gameHost.connectClient(client, 0);
+		}
+	}, [gamemode]);
+	
 	return (
 		<div class={styles.gameWrapper}>
 			<audio
@@ -74,8 +94,9 @@ export default function PlayPage() {
 				<ShogiBoard
 					ref={shogiBoardRef}
 					game={game}
+					client={playerClient}
 					bottomPlayer={bottomPlayer}
-					interactive={path == "/play/pvp"}
+					interactive={gamemode == Gamemode.Pvp || (gamemode == Gamemode.Pvai && game.getCurrentPlayer() == Player.Sente)}
 					selectedSquare={selectedSquare}
 					setSelectedSquare={selectedSquare => {
 						setSelectedSquare(selectedSquare);
@@ -118,12 +139,24 @@ export default function PlayPage() {
 							)}
 							<p>Move {game.moveCounter}</p>
 							<p>Player {game.getCurrentPlayer() + 1}'s turn</p>
-							{(gamemode == Gamemode.Aivai) && (
-								<>
-								<h4>Player 1 eval: {gameHost.latestEvals[0]}</h4>
-								<h4>Player 2 eval: {gameHost.latestEvals[1]}</h4>
-								</>
-							)}
+							<div class="noSpacing">
+								{(gamemode == Gamemode.Aivp || gamemode == Gamemode.Aivai) && (
+									<>
+										<h4>Player 1: 🤖 {gameHost.info[0][0]}</h4>
+										<h4>Current eval: {gameHost.latestEvals[0]}</h4>
+										<p>Created by {gameHost.info[0][2]}. {gameHost.info[0][1]}</p>
+										<p>Version: {gameHost.info[0][3]}</p>
+									</>
+								)}
+								{(gamemode == Gamemode.Pvai || gamemode == Gamemode.Aivai) && (
+									<>
+										<h4>Player 2: 🤖 {gameHost.info[1][0]}</h4>
+										<h4>Current eval: {gameHost.latestEvals[1]}</h4>
+										<p>Created by {gameHost.info[1][2]}. {gameHost.info[1][1]}</p>
+										<p>Version: {gameHost.info[1][3]}</p>
+									</>
+								)}
+							</div>
 							{game.getStatus() != GameStatus.Playing && <h3>Player {game.getStatus()} wins!</h3>}
 							<Button onLeftMouseDown={() => setBottomPlayer(bottomPlayer == Player.Sente? Player.Gote : Player.Sente)}>Flip board</Button>
 							<Button onLeftMouseDown={() => {
@@ -205,9 +238,9 @@ export default function PlayPage() {
 							<h2>Select a game mode</h2>
 							<a href="/play/pvp"><Button>{getGamemodeName(Gamemode.Pvp)}</Button></a>
 							<br/>
-							{/* <a href="/play/pvai"><Button>{getGamemodeName(Gamemode.Pvai)}</Button></a>
+							<a href="/play/pvai"><Button>{getGamemodeName(Gamemode.Pvai)}</Button></a>
 							<br/>
-							<a href="/play/aivp"><Button>{getGamemodeName(Gamemode.Aivp)}</Button></a>
+							{/* <a href="/play/aivp"><Button>{getGamemodeName(Gamemode.Aivp)}</Button></a>
 							<br/> */}
 							<a href="/play/aivai"><Button>{getGamemodeName(Gamemode.Aivai)}</Button></a>
 						</>

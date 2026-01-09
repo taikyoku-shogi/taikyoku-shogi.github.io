@@ -81,6 +81,10 @@ main > section {
 .hidden {
 	display: none !important;
 }
+.noSpacing, .noSpacing * {
+	margin: 0;
+	padding: 0;
+}
 
 @media (prefers-color-scheme: dark) {
 	:root {

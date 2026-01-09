@@ -14,6 +14,7 @@ export default class GameHost {
 	readonly settings;
 	readonly #rerenderGui: () => void;
 	latestEvals: Vec2 = [NaN, NaN];
+	info: [Tuple<string | undefined, 5> | [], Tuple<string | undefined, 5> | []] = [[], []];
 	#clientOut: [MsgFunc | undefined, MsgFunc | undefined] = [undefined, undefined];
 	#timeLeft: Vec2;
 	#lastMoveTime: number = -1;
@@ -25,7 +26,6 @@ export default class GameHost {
 	
 	#initialised: [boolean, boolean] = [false, false];
 	
-	#info: [Tuple<string | undefined, 5> | [], Tuple<string | undefined, 5> | []] = [[], []];
 	#tsfens: string[] = [];
 	
 	constructor(game: Game, settings: GameSettings, rerenderGui: () => void) {
@@ -80,7 +80,7 @@ export default class GameHost {
 		let resigned = false;
 		switch(command) {
 			case "info": {
-				this.#info[client] = args.slice(0, 5) as Tuple<string, 5>;
+				this.info[client] = [...message.matchAll(/"(.+?)"/g)].map(([, x]) => x) as Tuple<string, 5>;
 			} break;
 			case "param": {
 				console.error(`Client ${client}: Parameters not yet implemented. Message: "${message}"`);

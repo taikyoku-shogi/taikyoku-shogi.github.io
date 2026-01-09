@@ -9,6 +9,8 @@ import { useForceRerender } from "../lib/hooks";
 import Piece from "../lib/Piece";
 import { hypot, sqrt } from "../lib/math";
 import { forwardRef } from "preact/compat";
+import { vecToBoardPos } from "../lib/atsi/atsiUtils";
+import { Client } from "../lib/atsi/atsi";
 
 type MultiStepMove = {
 	currentPos: Vec2,
@@ -21,6 +23,7 @@ export type ShogiBoardHandle = {
 
 export default forwardRef<ShogiBoardHandle, {
 	game: Game,
+	client?: Client | null,
 	bottomPlayer?: Player,
 	selectedSquare: Vec2 | null,
 	setSelectedSquare: Dispatch<Vec2 | null>,
@@ -32,6 +35,7 @@ export default forwardRef<ShogiBoardHandle, {
 	getCreativeHaxPiece?: (() => Piece | null) | null
 }>(function ShogiBoard({
 	game,
+	client,
 	bottomPlayer = Player.Sente,
 	selectedSquare,
 	setSelectedSquare,
@@ -106,7 +110,13 @@ export default forwardRef<ShogiBoardHandle, {
 			} else {
 				const move = validMoves[0];
 				// console.log("making move", move)
-				game.makeMove(move);
+				if(client) {
+					const moveCommand = `move ${vecToBoardPos(move.start)} ${vecToBoardPos(move.end)}`;
+					console.log("Sending command to host:", moveCommand);
+					client?.messageHost?.(moveCommand);
+				} else {
+					game.makeMove(move);
+				}
 				console.log(`${game.countAllMoves()} moves`);
 				if(game.getStatus() != GameStatus.Playing) {
 					console.log(`WIN FOR ${game.getStatus() == GameStatus.SenteWin? "SENTE" : "GOTE"}!!!!!`);

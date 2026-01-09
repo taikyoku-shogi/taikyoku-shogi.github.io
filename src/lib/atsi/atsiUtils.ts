@@ -13,3 +13,6 @@ export function boardPosToVec(pos: string): Vec2 {
 	const rank = rankStr.charCodeAt(0) - "a".charCodeAt(0) + 26 * (rankStr.length - 1);
 	return [file, rank];
 }
+export function vecToBoardPos(vec: Vec2): string {
+	return `${36 - vec[0]}${(String.fromCharCode("a".charCodeAt(0) + (vec[1] % 26))).repeat(vec[1] >= 26? 2 : 1)}`;
+}
