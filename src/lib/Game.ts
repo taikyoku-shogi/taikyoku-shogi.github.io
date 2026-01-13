@@ -7,6 +7,8 @@ import { TwoWayNumericalMapping } from "./utils";
 import * as vec2 from "./vec2";
 
 export default class Game {
+	squaresToHighlight = new vec2.Set();
+	
 	readonly #squares: (Piece | null)[] = Array(1296).fill(null);;
 	#moveCounter: number = 0;
 	get moveCounter() {

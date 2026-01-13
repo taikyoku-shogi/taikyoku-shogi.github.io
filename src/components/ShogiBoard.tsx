@@ -201,6 +201,8 @@ export default forwardRef<ShogiBoardHandle, {
 						const wasLastMoveStart = lastMove && (vec2.equals(pos, lastMove.start) || (lastMove.intermediateSteps && lastMove.intermediateSteps?.some(step => vec2.equals(pos, step))));
 						const wasLastMoveEnd = lastMove && vec2.equals(pos, lastMove.end);
 						
+						const shouldBeHighlighted = game.squaresToHighlight.has(pos);
+						
 						return (
 							<BoardSquare
 								key={wasLastMoveEnd? `anim-${lastMoveTime}` : `static-${x}-${y}`} // This is needed so if a piece which just moved is captured, Preact doesn't optimise it away and will fully replace this element, ensuring the move animation plays.
@@ -215,6 +217,7 @@ export default forwardRef<ShogiBoardHandle, {
 									piece && (piece.owner == Player.Sente? styles.sente : styles.gote),
 									wasLastMoveStart && styles.lastMoveStart,
 									wasLastMoveEnd && styles.lastMoveEnd,
+									shouldBeHighlighted && styles.inAttackMap,
 									debug && inAttackMap && styles.inAttackMap,
 									debug && inReverseAttackMap && styles.inReverseAttackMap
 								)}

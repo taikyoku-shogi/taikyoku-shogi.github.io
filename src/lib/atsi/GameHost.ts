@@ -94,7 +94,14 @@ export default class GameHost {
 					
 					const [startPos, endPos, steps] = extractMovePositions(args);
 					
-					this.#validateMove(startPos, endPos, steps);
+					try {
+						this.#validateMove(startPos, endPos, steps);
+					} catch(e) {
+						this.game.squaresToHighlight.add(startPos);
+						this.game.squaresToHighlight.add(endPos);
+						steps.forEach(step => this.game.squaresToHighlight.add(step));
+						throw e;
+					}
 					const move: Move = {
 						start: startPos,
 						end: endPos,
@@ -199,6 +206,7 @@ export default class GameHost {
 		if(!targetSquares.some(pos => vec2.equals(pos, endPos))) {
 			throw CannotMovePieceError(`Impossible to move to ${vec2.stringify(endPos)}`);
 		}
+		return;
 		
 		const movements = pieceMovements.get(movingPiece.species)!;
 		const deltaPosition = vec2.sub(endPos, startPos);
@@ -235,8 +243,8 @@ export default class GameHost {
 function extractMovePositions(args: string[]): [Vec2, Vec2, Vec2[]] {
 	try {
 		const startPos = boardPosToVec(args[0]);
-		const endPos = boardPosToVec(args.at(-1)!);
-		const steps = args.slice(1, -1)?.map(boardPosToVec) ?? [];
+		const endPos = boardPosToVec(args[1]);
+		const steps = args.slice(2).map(boardPosToVec);
 		return [startPos, endPos, steps];
 	} catch(e) {
 		throw new AtsiError(`Incorrectly formatted move command. "${JSON.stringify(args)}", ${e}`);
