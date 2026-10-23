@@ -167,6 +167,7 @@ export default class GameHost {
 						} else {
 							console.info(`Matching TSFENs for mv ${moveCounter}`)
 						}
+						delete this.#tsfens[moveCounter];
 					} else {
 						this.#tsfens[moveCounter] = tsfenBoard;
 					}
