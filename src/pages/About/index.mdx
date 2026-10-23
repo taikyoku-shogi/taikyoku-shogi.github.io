@@ -110,7 +110,7 @@ Tells the client the game resulted in a loss for them.
 ##### `draw [REASON?: string]`
 Tells the client the game resulted in a draw.
 
-##### `opmove [START_POS: board position] [STEP_POS_1?: board position] [STEP_POS_2?: board position] ... [STEP_POS_𝑛?: board position] [END_POS: board position] [TIME: number] [OP_TIME: number]`
+##### `opmove [START_POS: board position] [END_POS: board position] [STEP_POS?: board position] [END_POS: board position] [TIME: number] [OP_TIME: number]`
 Tells the client that its opponent moved. Syntax is the same as the `move` command, except for the two additional arguments `TIME` and `OP_TIME` at the end, representing how much time left the client and its opponent respectively have left in seconds. Although these figures could be calculated from the time controls, latency cannot be calculated and hence including them here ensures the client does get out of sync.
 
 ##### `setparam [PARAM_NAME: string] [PARAM_VALUE]`
@@ -139,8 +139,8 @@ Provides a parameter that can be used to customise the engine client. This comma
 
 Multiple parameters may be provided through multiple `param` commands.
 
-##### `move [START_POS: board position] [STEP_POS_1?: board position] [STEP_POS_2?: board position] ... [STEP_POS_𝑛?: board position] [END_POS: board position]`
-Tells the host the client has moved the piece at `START_POS` to `END_POS`, capturing a piece at `END_POS` if present. If any `STEP_POS_𝑛` are present, it means that the piece performed a multi-step move and moved to the pos these board positions, capturing all pieces present. The `STEP_POS_𝑛` arguments are only needed when the piece being moved has multiple paths to move to the same end position, and each path results in a different outcome.
+##### `move [START_POS: board position] [END_POS: board position] [STEP_POS?: board position]`
+Tells the host the client has moved the piece at `START_POS` to `END_POS`, capturing a piece at `END_POS` if present. If `STEP_POS` is present, it means that the piece performed a multi-step move and moved to this board positions, capturing the piece present (if any). The `STEP_POS` arguments are only needed when the piece being moved has multiple paths to move to the same end position, and each path results in a different outcome.
 
 Some examples of when the `STEP_POS_𝑛` arguments are needed or not:
 - Diagonal hook movers which can promote (i.e. {pieceName("C")} and {pieceName("PCK")}) need a `STEP_POS_1` argument when they have two paths to get to `END_POS` and one crosses over the promotion line (and hence would result in the piece promoting upon finishing the move), and one doesn't. If only a single path is present, the `STEP_POS_1` argument can be omitted. If two paths are present and only one would result in promotion, it is assumed that the piece took the path that didn't result in promotion. Even if the `STEP_POS_1` argument is not required, including it in the command is valid as long as the path is valid.
