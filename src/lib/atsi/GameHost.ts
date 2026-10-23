@@ -153,20 +153,25 @@ export default class GameHost {
 				}
 			} break;
 			case "log": {
-				console.info(`Log from client ${client + 1}: ${args.join(" ")}`);
+				// console.info(`Log from client ${client + 1}: ${args.join(" ")}`);
 				if(args.some(a => a.toLowerCase().includes("tsfen"))) {
+					console.info(`Got TSFEN from client ${client + 1}`)
 					const moveCounter = +args.at(-1)!;
 					const tsfenBoard = args.at(-2)!;
 					if(moveCounter in this.#tsfens) {
 						const existingTsfenBoard = this.#tsfens[moveCounter];
 						if(tsfenBoard != existingTsfenBoard) {
 							// debugger;
-							console.error(`Mismatching TSFENS!`);
+							console.error(`Mismatching TSFENs at mv ${moveCounter}!\n${tsfenBoard}\n\n${existingTsfenBoard}`);
 							// throw new Error(`Mismatching TSFENS!\n${tsfenBoard}\n${existingTsfenBoard}`);
+						} else {
+							console.info(`Matching TSFENs for mv ${moveCounter}`)
 						}
 					} else {
 						this.#tsfens[moveCounter] = tsfenBoard;
 					}
+				} else {
+					console.info(`Log from client ${client + 1}: ${args.join(" ")}`);
 				}
 			} break;
 			default: {
