@@ -88,8 +88,10 @@ export default class Piece {
 		});
 		if("compoundMoves" in movements) {
 			movements.compoundMoves.forEach(([mv1, mv2]) => {
-				const move1s = this.#getMovesAndAttackingSquaresFromMovements(pos, game, mv1)[0];
+				const [move1s, attackingSquaresAfterMove1s] = this.#getMovesAndAttackingSquaresFromMovements(pos, game, mv1);
+				attackingSquaresAfterMove1s.forEach(sq => attackingSquares.add(sq));
 				move1s.map(move1 => {
+					validMoveLocations.add(move1.end);
 					if(!mv1.canContinueAfterCapture && this.#getSquareStatus(game, move1.end) != SquareStatus.Empty) {
 						return;
 					}
