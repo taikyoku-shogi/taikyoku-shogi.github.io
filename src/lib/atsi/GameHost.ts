@@ -39,7 +39,7 @@ export default class GameHost {
 	}
 	connectClient(client: Client, player: Player) {
 		this.#clientOut[player] = (message: string) => [console.debug(`Sending message to player ${player+1}:`, message), client.sendMessage(message)];
-		client.messageHost = (message: string) => this.#handleMessage(message, player);
+		client.messageHost = (messages: string) => messages.split("\n").forEach(message => this.#handleMessage(message, player));
 		
 		this.#clientOut[player](`atsiinit ${PROTOCOL_VERSION}`);
 	}
